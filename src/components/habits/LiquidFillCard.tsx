@@ -1,7 +1,8 @@
 import { Habit } from "@/types/habit";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface LiquidFillCardProps {
   habit: Habit;
@@ -10,6 +11,7 @@ interface LiquidFillCardProps {
 }
 
 export function LiquidFillCard({ habit, onToggleComplete, onUpdateProgress }: LiquidFillCardProps) {
+  const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(false);
 
   const handleCheckClick = (e: React.MouseEvent) => {
@@ -24,6 +26,11 @@ export function LiquidFillCard({ habit, onToggleComplete, onUpdateProgress }: Li
       const newValue = Math.min((habit.currentValue || 0) + 1, habit.target);
       onUpdateProgress?.(habit.id, newValue);
     }
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/edit-habit/${habit.id}`);
   };
 
   const isComplete = habit.progress === 100;
@@ -58,6 +65,14 @@ export function LiquidFillCard({ habit, onToggleComplete, onUpdateProgress }: Li
           )}
         >
           {isComplete && <CheckCircle2 className="w-4 h-4" />}
+        </button>
+
+        <button
+          onClick={handleEditClick}
+          className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+          aria-label="Editar"
+        >
+          <Edit2 className="w-4 h-4 text-muted-foreground" />
         </button>
 
         <div
