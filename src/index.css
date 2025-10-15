@@ -1,42 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Habitus Design System - Following exact HTML specifications */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 271 23% 97%;
+    --foreground: 0 0% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 20%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 269 89% 48%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 269 89% 63%;
 
     --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary-foreground: 269 89% 48%;
 
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 0 0% 53%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 269 89% 48%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 0 0% 91%;
+    --input: 0 0% 91%;
+    --ring: 269 89% 48%;
 
-    --radius: 0.5rem;
+    --radius: 0.9375rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -56,33 +57,33 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 273 71% 8%;
+    --foreground: 0 0% 94%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 271 45% 16%;
+    --card-foreground: 0 0% 94%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 271 45% 16%;
+    --popover-foreground: 0 0% 94%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 269 89% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 271 45% 16%;
+    --secondary-foreground: 0 0% 94%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 271 45% 16%;
+    --muted-foreground: 0 0% 53%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 271 45% 16%;
+    --accent-foreground: 0 0% 94%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 94%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 271 45% 16%;
+    --input: 271 45% 16%;
+    --ring: 269 89% 63%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -97,9 +98,82 @@ All colors MUST be HSL.
 @layer base {
   * {
     @apply border-border;
+    font-family: 'Lexend', sans-serif;
   }
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s, color 0.3s;
+  }
+}
+
+@layer utilities {
+  /* Gradient backgrounds for habit icons */
+  .gradient-book {
+    background: linear-gradient(135deg, hsl(203, 99%, 66%), hsl(182, 100%, 50%));
+  }
+  
+  .gradient-walk {
+    background: linear-gradient(135deg, hsl(147, 80%, 63%), hsl(170, 90%, 60%));
+  }
+  
+  .gradient-meditate {
+    background: linear-gradient(135deg, hsl(341, 93%, 65%), hsl(48, 99%, 63%));
+  }
+  
+  .gradient-exercise {
+    background: linear-gradient(135deg, hsl(0, 100%, 81%), hsl(330, 100%, 91%));
+  }
+  
+  .gradient-journal {
+    background: linear-gradient(135deg, hsl(175, 69%, 87%), hsl(344, 76%, 89%));
+  }
+  
+  .gradient-water {
+    background: linear-gradient(135deg, hsl(186, 98%, 77%), hsl(215, 100%, 70%));
+  }
+  
+  .gradient-sleep {
+    background: linear-gradient(135deg, hsl(268, 71%, 76%), hsl(270, 100%, 97%));
+  }
+  
+  .gradient-food {
+    background: linear-gradient(135deg, hsl(32, 100%, 90%), hsl(14, 96%, 72%));
+  }
+
+  /* Primary gradient */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+  }
+
+  /* Trophy animation */
+  @keyframes glow {
+    0% { opacity: 0.3; }
+    100% { opacity: 0.7; }
+  }
+
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-glow {
+    animation: glow 2s infinite alternate;
+  }
+
+  .animate-sparkle {
+    animation: sparkle 2s infinite;
+  }
+
+  .animate-sparkle-delay-1 {
+    animation: sparkle 2s infinite 0.5s;
+  }
+
+  .animate-sparkle-delay-2 {
+    animation: sparkle 2s infinite 1s;
+  }
+
+  .animate-sparkle-delay-3 {
+    animation: sparkle 2s infinite 1.5s;
   }
 }
