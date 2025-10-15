@@ -21,6 +21,7 @@ export default function EditHabit() {
   const [durationDays, setDurationDays] = useState<string>("30");
   const [icon, setIcon] = useState("📚");
   const [showIconPicker, setShowIconPicker] = useState(false);
+  const [targetValue, setTargetValue] = useState("10");
 
   const handleSave = () => {
     alert("Hábito atualizado com sucesso!");
@@ -75,9 +76,11 @@ export default function EditHabit() {
                 <SelectContent>
                   <SelectItem value="days">Dias</SelectItem>
                   <SelectItem value="hours">Horas</SelectItem>
-                  <SelectItem value="liters">Litros</SelectItem>
+                  <SelectItem value="liters">Litros (L)</SelectItem>
                   <SelectItem value="pages">Páginas</SelectItem>
                   <SelectItem value="numeric">Numérico</SelectItem>
+                  <SelectItem value="km">Quilômetros (km)</SelectItem>
+                  <SelectItem value="unidade">Unidade</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -100,15 +103,44 @@ export default function EditHabit() {
                 </Select>
               </div>
             ) : (
-              <div className="mb-6">
-                <Label className="mb-2 block">Meta Diária</Label>
-                <Input
-                  type="number"
-                  value={target}
-                  onChange={(e) => setTarget(e.target.value)}
-                  className="h-[60px] text-base"
-                />
-              </div>
+              <>
+                <div className="mb-6">
+                  <Label className="mb-2 block">Quantidade Alvo</Label>
+                  <div className="flex gap-3">
+                    <Input
+                      type="number"
+                      value={targetValue}
+                      onChange={(e) => setTargetValue(e.target.value)}
+                      placeholder="Ex.: 4"
+                      className="h-[60px] text-base flex-1"
+                    />
+                    <div className="w-32">
+                      <Select value={unit} onValueChange={(v) => setUnit(v as HabitUnit)}>
+                        <SelectTrigger className="h-[60px] text-base">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="liters">L</SelectItem>
+                          <SelectItem value="km">km</SelectItem>
+                          <SelectItem value="pages">pág</SelectItem>
+                          <SelectItem value="hours">h</SelectItem>
+                          <SelectItem value="unidade">un</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <Label className="mb-2 block">Meta Diária</Label>
+                  <Input
+                    type="number"
+                    value={target}
+                    onChange={(e) => setTarget(e.target.value)}
+                    className="h-[60px] text-base"
+                  />
+                </div>
+              </>
             )}
           </>
         )}

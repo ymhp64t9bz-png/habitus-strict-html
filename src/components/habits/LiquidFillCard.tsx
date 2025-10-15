@@ -92,6 +92,8 @@ function getUnitLabel(unit: string): string {
     liters: 'L',
     pages: 'pág',
     numeric: '',
+    km: 'km',
+    unidade: '',
   };
   return labels[unit] || '';
 }

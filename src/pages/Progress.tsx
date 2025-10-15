@@ -18,14 +18,12 @@ export default function Progress() {
       <Header title="Progresso" showBack showSettings onBack={() => navigate("/")} />
 
       <div className="max-w-[414px] mx-auto p-5">
-        <section>
+        <section className="mb-10">
           <h2 className="text-sm text-primary font-medium mb-4">Progresso Geral</h2>
-          <div className="bg-card rounded-2xl p-5 text-center shadow-sm">
-            <FuelTank percentage={totalProgress} />
-          </div>
+          <FuelTank percentage={totalProgress} />
         </section>
 
-        <section className="mt-10">
+        <section>
           <h2 className="text-sm text-primary font-medium mb-4">Todos os Hábitos</h2>
           <div className="space-y-4">
             {habits.map((habit) => (

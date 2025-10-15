@@ -46,29 +46,26 @@ export default function Profile() {
         </div>
 
         <section className="mt-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            Conquistas Recentes
-            <span className="text-sm font-normal text-muted-foreground">(últimas 3)</span>
-          </h2>
-          <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
+          <h2 className="text-sm text-primary font-medium mb-4">Conquistas Recentes</h2>
+          <div className="grid grid-cols-3 gap-3 mb-6">
             {achievements
               .filter(a => !a.locked && a.progress === 100)
               .slice(0, 3)
               .map((achievement) => (
                 <div
                   key={achievement.id}
-                  className="flex-shrink-0 w-20 flex flex-col items-center gap-2 p-3 bg-card rounded-xl shadow-sm"
+                  className="p-4 text-center bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl shadow-sm"
                 >
-                  <div className="text-3xl">{achievement.icon}</div>
-                  <p className="text-xs text-center leading-tight">{achievement.name}</p>
+                  <div className="text-3xl mb-2">{achievement.icon}</div>
+                  <p className="text-xs font-medium truncate">{achievement.name}</p>
                 </div>
               ))}
           </div>
         </section>
 
         <section className="mt-6">
-          <h2 className="text-xl font-bold mb-4">Meus hábitos</h2>
-          <div className="space-y-4">
+          <h2 className="text-sm text-primary font-medium mb-4">Meus Hábitos</h2>
+          <div className="space-y-3">
             {habits.map((habit) => (
               <LiquidFillCard key={habit.id} habit={habit} />
             ))}

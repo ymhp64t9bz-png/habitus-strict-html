@@ -1,5 +1,5 @@
 export type HabitType = 'habit' | 'task';
-export type HabitUnit = 'days' | 'hours' | 'liters' | 'pages' | 'numeric';
+export type HabitUnit = 'days' | 'hours' | 'liters' | 'pages' | 'numeric' | 'km' | 'unidade';
 
 export interface Habit {
   id: number;

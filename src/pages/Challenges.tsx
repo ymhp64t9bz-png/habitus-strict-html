@@ -2,15 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Challenge } from "@/types/habit";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Clock } from "lucide-react";
 
 export default function Challenges() {
   const navigate = useNavigate();
-  const [challenges] = useState<Challenge[]>([
+  
+  const [receivedChallenges] = useState<Challenge[]>([
     {
       id: 1,
       challengerId: 2,
@@ -22,113 +24,120 @@ export default function Challenges() {
     },
   ]);
 
-  const receivedChallenges = challenges.filter(c => c.status === 'open');
-  const activeChallenges = challenges.filter(c => c.status === 'accepted');
-  const completedChallenges = challenges.filter(c => c.status === 'completed');
+  const [sentChallenges] = useState<Challenge[]>([
+    {
+      id: 2,
+      challengerId: 1,
+      challengerName: "João Silva",
+      challengedId: 3,
+      habitSet: [],
+      status: 'accepted',
+      createdAt: new Date().toISOString(),
+    },
+  ]);
 
   const handleAccept = (id: number) => {
-    alert(`Desafio ${id} aceito!`);
+    console.log("Aceitar desafio", id);
   };
 
   const handleDecline = (id: number) => {
-    alert(`Desafio ${id} recusado!`);
+    console.log("Recusar desafio", id);
   };
 
   return (
     <div className="min-h-screen pb-24">
-      <Header title="Desafios" showBack showSettings onBack={() => navigate("/")} />
+      <Header title="Desafios" showBack onBack={() => navigate("/")} />
 
       <div className="max-w-[414px] mx-auto p-5">
-        <div className="bg-gradient-primary text-white rounded-2xl p-5 mb-6 text-center">
-          <h2 className="text-xl font-bold mb-2">Arena de Desafios</h2>
-          <p className="text-sm opacity-90">
-            Desafie amigos ou aceite desafios para testar sua disciplina!
-          </p>
-        </div>
-
         <Tabs defaultValue="received" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="received">
-              Recebidos ({receivedChallenges.length})
-            </TabsTrigger>
-            <TabsTrigger value="active">
-              Ativos ({activeChallenges.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed">
-              Concluídos ({completedChallenges.length})
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="received">Recebidos</TabsTrigger>
+            <TabsTrigger value="sent">Enviados</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="received" className="space-y-4">
+          <TabsContent value="received" className="mt-6 space-y-4">
             {receivedChallenges.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Nenhum desafio recebido
-              </p>
+              <Card className="p-8 text-center">
+                <p className="text-muted-foreground">Nenhum desafio recebido</p>
+              </Card>
             ) : (
               receivedChallenges.map((challenge) => (
                 <Card key={challenge.id} className="p-4">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-xl">
-                      🥊
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="font-semibold">
-                        {challenge.challengerName}
-                      </h3>
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-bold">{challenge.challengerName}</h3>
                       <p className="text-sm text-muted-foreground">
-                        Te desafiou para {challenge.habitSet.length} hábitos
+                        Te desafiou!
                       </p>
                     </div>
+                    <Badge variant="outline" className="bg-primary/10">
+                      <Clock className="w-3 h-3 mr-1" />
+                      Novo
+                    </Badge>
                   </div>
+
+                  <p className="text-sm mb-4">
+                    Substitua seus hábitos pelos de {challenge.challengerName} e complete todos para vencer!
+                  </p>
 
                   <div className="flex gap-2">
                     <Button
-                      size="sm"
-                      variant="default"
-                      className="flex-1"
-                      onClick={() => handleAccept(challenge.id)}
-                    >
-                      <CheckCircle2 className="w-4 h-4 mr-1" />
-                      Aceitar
-                    </Button>
-                    <Button
-                      size="sm"
                       variant="outline"
+                      size="sm"
                       className="flex-1"
                       onClick={() => handleDecline(challenge.id)}
                     >
                       <XCircle className="w-4 h-4 mr-1" />
                       Recusar
                     </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleAccept(challenge.id)}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      Aceitar
+                    </Button>
                   </div>
                 </Card>
               ))
             )}
           </TabsContent>
 
-          <TabsContent value="active" className="space-y-4">
-            {activeChallenges.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Nenhum desafio ativo
-              </p>
+          <TabsContent value="sent" className="mt-6 space-y-4">
+            {sentChallenges.length === 0 ? (
+              <Card className="p-8 text-center">
+                <p className="text-muted-foreground">Nenhum desafio enviado</p>
+              </Card>
             ) : (
-              activeChallenges.map((challenge) => (
+              sentChallenges.map((challenge) => (
                 <Card key={challenge.id} className="p-4">
-                  <p>Desafio ativo com {challenge.challengerName}</p>
-                </Card>
-              ))
-            )}
-          </TabsContent>
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-bold">Desafio enviado</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Para: {challenge.challengerName}
+                      </p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={
+                        challenge.status === 'accepted'
+                          ? 'bg-green-500/10 text-green-600'
+                          : challenge.status === 'declined'
+                          ? 'bg-red-500/10 text-red-600'
+                          : 'bg-yellow-500/10 text-yellow-600'
+                      }
+                    >
+                      {challenge.status === 'accepted' && 'Aceito'}
+                      {challenge.status === 'declined' && 'Recusado'}
+                      {challenge.status === 'open' && 'Aguardando'}
+                    </Badge>
+                  </div>
 
-          <TabsContent value="completed" className="space-y-4">
-            {completedChallenges.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Nenhum desafio concluído ainda
-              </p>
-            ) : (
-              completedChallenges.map((challenge) => (
-                <Card key={challenge.id} className="p-4">
-                  <p>Desafio concluído</p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(challenge.createdAt).toLocaleDateString('pt-BR')}
+                  </p>
                 </Card>
               ))
             )}
