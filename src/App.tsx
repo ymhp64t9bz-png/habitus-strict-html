@@ -13,6 +13,9 @@ import Achievements from "./pages/Achievements";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import EditHabit from "./pages/EditHabit";
+import EditProfile from "./pages/EditProfile";
+import Challenges from "./pages/Challenges";
+import Subscription from "./pages/Subscription";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
@@ -34,10 +37,13 @@ const App = () => (
               <Route path="/community" element={<Community />} />
               <Route path="/achievements" element={<Achievements />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/edit-habit/:id" element={<EditHabit />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="*" element={<NotFound />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/edit-habit/:id" element={<EditHabit />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/challenges" element={<Challenges />} />
+          <Route path="/subscription" element={<Subscription />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
         </BrowserRouter>

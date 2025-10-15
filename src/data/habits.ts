@@ -9,6 +9,11 @@ export const initialHabits: Habit[] = [
     progress: 60,
     icon: "📚",
     iconClass: "book",
+    type: "habit",
+    unit: "pages",
+    target: 10,
+    currentValue: 6,
+    durationDays: 30,
   },
   {
     id: 2,
@@ -18,6 +23,11 @@ export const initialHabits: Habit[] = [
     progress: 100,
     icon: "🚶",
     iconClass: "walk",
+    type: "habit",
+    unit: "hours",
+    target: 0.5,
+    currentValue: 0.5,
+    durationDays: 7,
   },
   {
     id: 3,
@@ -27,6 +37,34 @@ export const initialHabits: Habit[] = [
     progress: 0,
     icon: "🧘",
     iconClass: "meditate",
+    type: "habit",
+    unit: "hours",
+    target: 0.17,
+    currentValue: 0,
+    durationDays: 15,
+  },
+];
+
+export const initialTasks: Habit[] = [
+  {
+    id: 101,
+    name: "Ligar para o dentista",
+    description: "Agendar consulta",
+    streak: 0,
+    progress: 0,
+    icon: "📞",
+    iconClass: "phone",
+    type: "task",
+  },
+  {
+    id: 102,
+    name: "Comprar presente aniversário",
+    description: "Presente para Maria",
+    streak: 0,
+    progress: 0,
+    icon: "🎁",
+    iconClass: "gift",
+    type: "task",
   },
 ];
 
