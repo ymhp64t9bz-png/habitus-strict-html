@@ -2,11 +2,55 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/contexts/UserContext";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Subscription() {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubscribe = async () => {
+    if (loading) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout');
+      
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Erro ao criar checkout:', error);
+      toast.error("Erro ao processar assinatura. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    if (loading) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Erro ao abrir portal:', error);
+      toast.error("Erro ao abrir portal de assinatura. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const plans = [
     {
@@ -98,19 +142,47 @@ export default function Subscription() {
                     : ""
                 }`}
                 variant={plan.highlight ? "default" : "outline"}
+                onClick={handleSubscribe}
+                disabled={loading || user?.premium}
               >
-                Assinar
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processando...
+                  </>
+                ) : user?.premium ? (
+                  "Plano Atual"
+                ) : (
+                  "Assinar"
+                )}
               </Button>
             </Card>
           ))}
         </div>
 
-        <div className="text-center space-y-2">
-          <Button variant="ghost" className="text-sm">
-            Restaurar Compra
-          </Button>
+        {user?.premium && (
+          <div className="text-center space-y-2 mb-4">
+            <Button 
+              variant="outline" 
+              className="text-sm"
+              onClick={handleManageSubscription}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Carregando...
+                </>
+              ) : (
+                "Gerenciar Assinatura"
+              )}
+            </Button>
+          </div>
+        )}
+        
+        <div className="text-center">
           <p className="text-xs text-muted-foreground">
-            O pagamento é processado pela App Store/Play Store. Você pode gerenciar sua assinatura nas configurações da sua conta.
+            O pagamento é processado pelo Stripe. Você pode gerenciar sua assinatura a qualquer momento.
           </p>
         </div>
       </div>
