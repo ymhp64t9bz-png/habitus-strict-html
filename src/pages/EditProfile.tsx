@@ -6,17 +6,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Camera } from "lucide-react";
+import { Camera, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/contexts/UserContext";
+import { cn } from "@/lib/utils";
+
+const achievements = [
+  { id: "first_habit", name: "Primeiro Hábito", icon: "🎯" },
+  { id: "week_streak", name: "7 Dias Seguidos", icon: "🔥" },
+  { id: "water_champion", name: "Campeão da Água", icon: "💧" },
+  { id: "early_bird", name: "Madrugador", icon: "🌅" },
+  { id: "book_lover", name: "Amante dos Livros", icon: "📚" },
+  { id: "fitness_master", name: "Mestre Fitness", icon: "💪" },
+];
 
 export default function EditProfile() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [name, setName] = useState("João Silva");
-  const [email] = useState("joao@exemplo.com");
-  const [bio, setBio] = useState("Transformando hábitos em resultados");
-  const [profession, setProfession] = useState("Desenvolvedor");
-  const [avatarUrl, setAvatarUrl] = useState("https://api.dicebear.com/7.x/avataaars/svg?seed=joao");
+  const { user, updateUser } = useUser();
+  const [name, setName] = useState(user.name);
+  const [bio, setBio] = useState(user.bio);
+  const [profession, setProfession] = useState(user.profession);
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
+  const [selectedAchievements, setSelectedAchievements] = useState<string[]>(user.selectedAchievements);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -50,7 +62,32 @@ export default function EditProfile() {
     reader.readAsDataURL(file);
   };
 
+  const toggleAchievement = (id: string) => {
+    setSelectedAchievements(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(a => a !== id);
+      }
+      if (prev.length >= 3) {
+        toast({
+          title: "Limite atingido",
+          description: "Você pode selecionar no máximo 3 conquistas",
+          variant: "destructive",
+        });
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
   const handleSave = () => {
+    updateUser({
+      name,
+      bio,
+      profession,
+      avatarUrl,
+      selectedAchievements,
+    });
+    
     toast({
       title: "Perfil atualizado!",
       description: "Suas informações foram salvas com sucesso.",
@@ -100,7 +137,7 @@ export default function EditProfile() {
         <div className="mb-6">
           <Label className="mb-2 block">Email</Label>
           <Input
-            value={email}
+            value={user.email}
             disabled
             readOnly
             className="h-[60px] text-base bg-muted cursor-not-allowed"
@@ -132,6 +169,30 @@ export default function EditProfile() {
           <p className="text-xs text-muted-foreground mt-1 text-right">
             {bio.length}/200
           </p>
+        </div>
+
+        <div className="mb-6">
+          <Label className="mb-2 block flex items-center gap-2">
+            <Trophy className="w-4 h-4" />
+            Conquistas em Destaque (selecione até 3)
+          </Label>
+          <div className="grid grid-cols-2 gap-3">
+            {achievements.map((achievement) => (
+              <button
+                key={achievement.id}
+                onClick={() => toggleAchievement(achievement.id)}
+                className={cn(
+                  "min-h-[44px] p-3 rounded-xl border-2 transition-all active:scale-95",
+                  selectedAchievements.includes(achievement.id)
+                    ? "border-primary bg-primary/10"
+                    : "border-muted bg-card"
+                )}
+              >
+                <div className="text-2xl mb-1">{achievement.icon}</div>
+                <p className="text-xs font-medium">{achievement.name}</p>
+              </button>
+            ))}
+          </div>
         </div>
 
         <Button onClick={handleSave} className="w-full h-[60px] text-base font-bold">

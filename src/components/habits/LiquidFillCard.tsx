@@ -74,7 +74,7 @@ export function LiquidFillCard({
             )}
             aria-label={isComplete ? "Hábito completo" : "Marcar como completo"}
           >
-            {isComplete && <CheckCircle2 className="w-4 h-4" />}
+            {isComplete && <CheckCircle2 className="w-3.5 h-3.5" />}
           </button>
         )}
 
@@ -84,7 +84,7 @@ export function LiquidFillCard({
             className="absolute top-3 right-3 min-w-[44px] min-h-[44px] w-8 h-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center active:bg-background active:scale-95 transition-all"
             aria-label="Editar hábito"
           >
-            <Edit2 className="w-4 h-4 text-muted-foreground" />
+            <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         )}
 

@@ -93,7 +93,11 @@ export default function EditHabit() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="h-[60px] text-base"
+            maxLength={20}
           />
+          <p className="text-xs text-muted-foreground mt-1 text-right">
+            {name.length}/20
+          </p>
         </div>
 
         <div className="mb-6">

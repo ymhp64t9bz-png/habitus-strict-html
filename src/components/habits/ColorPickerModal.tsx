@@ -26,6 +26,14 @@ const colors = [
   { name: "teal", class: "bg-gradient-to-br from-teal-400 to-teal-600", label: "Verde-água" },
   { name: "indigo", class: "bg-gradient-to-br from-indigo-400 to-indigo-600", label: "Índigo" },
   { name: "cyan", class: "bg-gradient-to-br from-cyan-400 to-cyan-600", label: "Ciano" },
+  { name: "slate", class: "bg-gradient-to-br from-slate-400 to-slate-600", label: "Cinza" },
+  { name: "rose", class: "bg-gradient-to-br from-rose-400 to-rose-600", label: "Rosa Escuro" },
+  { name: "amber", class: "bg-gradient-to-br from-amber-400 to-amber-600", label: "Âmbar" },
+  { name: "lime", class: "bg-gradient-to-br from-lime-400 to-lime-600", label: "Lima" },
+  { name: "emerald", class: "bg-gradient-to-br from-emerald-400 to-emerald-600", label: "Esmeralda" },
+  { name: "sky", class: "bg-gradient-to-br from-sky-400 to-sky-600", label: "Céu" },
+  { name: "violet", class: "bg-gradient-to-br from-violet-400 to-violet-600", label: "Violeta" },
+  { name: "fuchsia", class: "bg-gradient-to-br from-fuchsia-400 to-fuchsia-600", label: "Fúcsia" },
 ];
 
 export function ColorPickerModal({ open, onClose, onSelect, currentColor }: ColorPickerModalProps) {
