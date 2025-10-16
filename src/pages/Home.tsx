@@ -3,12 +3,26 @@ import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { LiquidFillCard } from "@/components/habits/LiquidFillCard";
 import { useHabits } from "@/contexts/HabitsContext";
+import { useUser } from "@/contexts/UserContext";
 import { Flame, Swords, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) {
+    return "Bom dia";
+  } else if (hour >= 12 && hour < 18) {
+    return "Boa tarde";
+  } else {
+    return "Boa noite";
+  }
+};
 
 export default function Home() {
   const navigate = useNavigate();
   const { habits, tasks, toggleComplete, updateProgress } = useHabits();
+  const { user } = useUser();
+  const greeting = getGreeting();
 
   const completedHabits = habits.filter(h => h.progress === 100).length;
   const progressPercentage = Math.round((completedHabits / habits.length) * 100);
@@ -26,7 +40,7 @@ export default function Home() {
           >
             <Swords className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl font-bold mb-2">Bom dia, Lucas!</h1>
+          <h1 className="text-2xl font-bold mb-2">{greeting}, {user.name}! 👋</h1>
           <p>Continue sua jornada de hábitos. Você está indo muito bem!</p>
         </section>
 
