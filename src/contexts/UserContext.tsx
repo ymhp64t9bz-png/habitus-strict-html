@@ -9,6 +9,7 @@ export interface UserProfile {
   profession: string;
   avatarUrl: string;
   selectedAchievements: string[];
+  premium: boolean;
 }
 
 interface UserContextType {
@@ -78,6 +79,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           profession: data.profession || '',
           avatarUrl: data.avatar_url,
           selectedAchievements: data.selected_achievements || [],
+          premium: data.premium || false,
         });
       }
     } catch (error) {

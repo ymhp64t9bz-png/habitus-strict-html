@@ -22,6 +22,7 @@ export type Database = {
           email: string
           id: string
           name: string
+          premium: boolean | null
           profession: string | null
           provider: string | null
           selected_achievements: string[] | null
@@ -35,6 +36,7 @@ export type Database = {
           email: string
           id?: string
           name: string
+          premium?: boolean | null
           profession?: string | null
           provider?: string | null
           selected_achievements?: string[] | null
@@ -48,6 +50,7 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+          premium?: boolean | null
           profession?: string | null
           provider?: string | null
           selected_achievements?: string[] | null
