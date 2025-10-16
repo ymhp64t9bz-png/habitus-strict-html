@@ -15,8 +15,8 @@ export function BottomNav() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-border/50 shadow-lg z-50">
-      <div className="max-w-[414px] mx-auto flex justify-around py-3">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border/50 shadow-lg z-50 safe-area-inset-bottom">
+      <div className="max-w-[414px] mx-auto flex justify-around py-2 pb-safe">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -24,10 +24,10 @@ export function BottomNav() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "p-3 rounded-xl transition-all",
+                "min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl transition-all active:scale-95",
                 location.pathname === item.path 
                   ? "text-primary bg-primary/10" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  : "text-muted-foreground active:bg-muted/50"
               )}
               aria-label={item.label}
             >

@@ -25,7 +25,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <div className="max-w-[414px] mx-auto min-h-screen bg-background shadow-2xl">
+      <div className="w-full max-w-[414px] mx-auto min-h-screen bg-background shadow-2xl overflow-x-hidden">
         <Routes>
           <Route path="/splash" element={<Splash />} />
           <Route path="/login" element={<Login />} />

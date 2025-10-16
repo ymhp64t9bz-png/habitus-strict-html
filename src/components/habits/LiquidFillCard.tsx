@@ -45,7 +45,7 @@ export function LiquidFillCard({
 
   return (
     <div
-      className="relative bg-card rounded-2xl p-4 shadow-sm overflow-hidden cursor-pointer hover:translate-y-[-3px] transition-all"
+      className="relative bg-card rounded-2xl p-4 shadow-sm overflow-hidden cursor-pointer hover:translate-y-[-3px] active:scale-[0.98] transition-all"
       onClick={handleCardClick}
     >
       {/* Liquid fill background - left to right */}
@@ -67,11 +67,12 @@ export function LiquidFillCard({
           <button
             onClick={handleCheckClick}
             className={cn(
-              "w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
+              "min-w-[44px] min-h-[44px] w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all active:scale-95",
               isComplete
                 ? "bg-primary border-primary text-primary-foreground"
-                : "border-muted-foreground/40 hover:border-primary"
+                : "border-muted-foreground/40 active:border-primary"
             )}
+            aria-label={isComplete ? "Hábito completo" : "Marcar como completo"}
           >
             {isComplete && <CheckCircle2 className="w-4 h-4" />}
           </button>
@@ -80,8 +81,8 @@ export function LiquidFillCard({
         {showEditButton && (
           <button
             onClick={handleEditClick}
-            className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-            aria-label="Editar"
+            className="absolute top-3 right-3 min-w-[44px] min-h-[44px] w-8 h-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center active:bg-background active:scale-95 transition-all"
+            aria-label="Editar hábito"
           >
             <Edit2 className="w-4 h-4 text-muted-foreground" />
           </button>

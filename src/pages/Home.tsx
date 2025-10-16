@@ -85,8 +85,9 @@ export default function Home() {
 
       <Button
         onClick={() => navigate("/edit-habit/new")}
-        className="fixed bottom-24 right-5 w-14 h-14 rounded-full shadow-lg"
+        className="fixed bottom-24 right-5 w-14 h-14 min-w-[56px] min-h-[56px] rounded-full shadow-lg active:scale-95 transition-transform"
         size="icon"
+        aria-label="Adicionar novo hábito"
       >
         <Plus className="w-6 h-6" />
       </Button>
