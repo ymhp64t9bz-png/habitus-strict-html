@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      habit_completions: {
+        Row: {
+          completed_at: string
+          habit_id: string
+          id: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          completed_at?: string
+          habit_id: string
+          id?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          completed_at?: string
+          habit_id?: string
+          id?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_completions_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          color: string
+          created_at: string
+          current_value: number
+          frequency: string
+          goal_value: number
+          icon: string
+          id: string
+          is_complete: boolean | null
+          is_task: boolean | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          current_value?: number
+          frequency: string
+          goal_value?: number
+          icon: string
+          id?: string
+          is_complete?: boolean | null
+          is_task?: boolean | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          current_value?: number
+          frequency?: string
+          goal_value?: number
+          icon?: string
+          id?: string
+          is_complete?: boolean | null
+          is_task?: boolean | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
