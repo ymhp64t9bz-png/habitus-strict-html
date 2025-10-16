@@ -46,23 +46,11 @@ export function FuelTank({ percentage }: FuelTankProps) {
         </div>
       </div>
 
-      {/* Percentage text */}
+      {/* Percentage text - only the number */}
       <div className="absolute inset-0 flex items-center justify-center z-10">
-        <div className="text-center">
-          <div className="text-6xl font-bold text-foreground drop-shadow-lg">
-            {percentage}%
-          </div>
-          <div className="text-sm text-muted-foreground mt-2">Progresso Geral</div>
+        <div className="text-6xl font-bold text-foreground drop-shadow-lg">
+          {percentage}%
         </div>
-      </div>
-
-      {/* Tank markers */}
-      <div className="absolute inset-y-0 left-4 flex flex-col justify-between py-4 text-xs text-muted-foreground">
-        <span>100%</span>
-        <span>75%</span>
-        <span>50%</span>
-        <span>25%</span>
-        <span>0%</span>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { IconPickerModal } from "@/components/habits/IconPickerModal";
+import { ColorPickerModal } from "@/components/habits/ColorPickerModal";
 import { Smile, Palette, ChevronRight, Trash2, Plus } from "lucide-react";
 import { HabitType, HabitUnit } from "@/types/habit";
 
@@ -20,7 +21,9 @@ export default function EditHabit() {
   const [target, setTarget] = useState("10");
   const [durationDays, setDurationDays] = useState<string>("30");
   const [icon, setIcon] = useState("📚");
+  const [iconClass, setIconClass] = useState("book");
   const [showIconPicker, setShowIconPicker] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const [targetValue, setTargetValue] = useState("10");
 
   const handleSave = () => {
@@ -158,12 +161,15 @@ export default function EditHabit() {
               <span className="flex-grow text-left">Ícone</span>
               <Plus className="w-5 h-5 text-muted-foreground" />
             </button>
-            <button className="w-full flex items-center gap-3 p-4 hover:bg-primary/5 transition-colors">
+            <button 
+              onClick={() => setShowColorPicker(true)}
+              className="w-full flex items-center gap-3 p-4 hover:bg-primary/5 transition-colors"
+            >
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <Palette className="w-5 h-5" />
               </div>
               <span className="flex-grow text-left">Cor</span>
-              <div className="w-5 h-5 rounded-full bg-primary mr-2" />
+              <div className={`w-8 h-8 rounded-lg mr-2 gradient-${iconClass}`} />
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
@@ -187,6 +193,13 @@ export default function EditHabit() {
         onClose={() => setShowIconPicker(false)}
         onSelect={setIcon}
         currentIcon={icon}
+      />
+
+      <ColorPickerModal
+        open={showColorPicker}
+        onClose={() => setShowColorPicker(false)}
+        onSelect={setIconClass}
+        currentColor={iconClass}
       />
     </div>
   );

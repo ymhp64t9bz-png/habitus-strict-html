@@ -40,10 +40,10 @@ export function LiquidFillCard({ habit, onToggleComplete, onUpdateProgress }: Li
       className="relative bg-card rounded-2xl p-4 shadow-sm overflow-hidden cursor-pointer hover:translate-y-[-3px] transition-all"
       onClick={handleCardClick}
     >
-      {/* Liquid fill background */}
+      {/* Liquid fill background - left to right */}
       <div
         className={cn(
-          "absolute inset-0 transition-all duration-[600ms] ease-out",
+          "absolute inset-y-0 left-0 transition-all duration-[600ms] ease-out",
           isComplete && isAnimating && "animate-glow",
           `gradient-${habit.iconClass}`
         )}

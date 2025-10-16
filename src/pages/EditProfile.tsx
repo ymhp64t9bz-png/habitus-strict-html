@@ -15,6 +15,7 @@ export default function EditProfile() {
   const [name, setName] = useState("João Silva");
   const [email] = useState("joao@exemplo.com");
   const [bio, setBio] = useState("Transformando hábitos em resultados");
+  const [profession, setProfession] = useState("Desenvolvedor");
   const [avatarUrl, setAvatarUrl] = useState("https://api.dicebear.com/7.x/avataaars/svg?seed=joao");
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,6 +108,16 @@ export default function EditProfile() {
           <p className="text-xs text-muted-foreground mt-1">
             O email não pode ser alterado
           </p>
+        </div>
+
+        <div className="mb-6">
+          <Label className="mb-2 block">Profissão / Ocupação</Label>
+          <Input
+            value={profession}
+            onChange={(e) => setProfession(e.target.value)}
+            className="h-[60px] text-base"
+            placeholder="Ex: Desenvolvedor, Atleta, Designer..."
+          />
         </div>
 
         <div className="mb-6">

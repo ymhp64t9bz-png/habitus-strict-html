@@ -18,7 +18,7 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen">
-      <Header title="Configurações" showBack onBack={() => navigate(-1)} />
+      <Header title="Configurações" showBack onBack={() => navigate("/profile")} />
 
       <div className="max-w-[414px] mx-auto p-5">
         <div className="bg-card rounded-2xl overflow-hidden shadow-sm my-5">
