@@ -28,7 +28,7 @@ export default function ResetPassword() {
       const validated = resetSchema.parse({ email });
       
       const { error } = await supabase.auth.resetPasswordForEmail(validated.email, {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}/update-password`,
       });
 
       if (error) {
