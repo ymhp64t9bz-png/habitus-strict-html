@@ -5,11 +5,15 @@ export default function Splash() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate("/login");
-    }, 3000);
+    const checkAuth = async () => {
+      const timer = setTimeout(() => {
+        navigate("/login");
+      }, 2000);
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    };
+    
+    checkAuth();
   }, [navigate]);
 
   return (

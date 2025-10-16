@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,53 +8,70 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
-const loginSchema = z.object({
+const signUpSchema = z.object({
+  name: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres").max(100),
   email: z.string().trim().email("Email inválido").max(255),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
 });
 
-export default function Login() {
+export default function SignUp() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/");
-      }
-    };
-    checkSession();
-  }, [navigate]);
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     setLoading(true);
 
     try {
-      const validated = loginSchema.parse(formData);
+      const validated = signUpSchema.parse(formData);
       
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signUp({
         email: validated.email,
         password: validated.password,
+        options: {
+          data: {
+            name: validated.name,
+          },
+          emailRedirectTo: `${window.location.origin}/`,
+        },
       });
 
       if (error) {
-        toast({
-          title: "Erro ao fazer login",
-          description: error.message === "Invalid login credentials" 
-            ? "Email ou senha incorretos" 
-            : error.message,
-          variant: "destructive",
-        });
+        if (error.message.includes("already registered")) {
+          toast({
+            title: "Erro ao cadastrar",
+            description: "Este email já está cadastrado. Faça login.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erro ao cadastrar",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
         return;
       }
 
-      navigate("/");
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Você já pode fazer login.",
+      });
+      
+      navigate("/login");
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
@@ -70,23 +87,6 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
-
-    if (error) {
-      toast({
-        title: "Erro ao fazer login com Google",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <div className="flex flex-col justify-center min-h-screen p-5">
       <div className="text-center mb-10">
@@ -98,8 +98,22 @@ export default function Login() {
       </div>
 
       <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-6">Bem-vindo de volta</h2>
-        <form onSubmit={handleLogin} className="space-y-4">
+        <h2 className="text-2xl font-bold mb-6">Criar conta</h2>
+        <form onSubmit={handleSignUp} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Nome</Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Seu nome"
+              className="h-[60px] text-base"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              disabled={loading}
+            />
+            {errors.name && <p className="text-sm text-destructive mt-1">{errors.name}</p>}
+          </div>
+
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -119,7 +133,7 @@ export default function Login() {
             <Input
               id="password"
               type="password"
-              placeholder="Sua senha"
+              placeholder="Mínimo 6 caracteres"
               className="h-[60px] text-base"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -128,37 +142,30 @@ export default function Login() {
             {errors.password && <p className="text-sm text-destructive mt-1">{errors.password}</p>}
           </div>
 
+          <div>
+            <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="Digite a senha novamente"
+              className="h-[60px] text-base"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              disabled={loading}
+            />
+            {errors.confirmPassword && <p className="text-sm text-destructive mt-1">{errors.confirmPassword}</p>}
+          </div>
+
           <Button type="submit" className="w-full h-[60px] text-base font-bold" disabled={loading}>
-            {loading ? "Entrando..." : "Entrar com email"}
+            {loading ? "Criando conta..." : "Criar conta"}
           </Button>
         </form>
-        
-        <Link to="/reset-password" className="block text-center text-primary mt-4">
-          Esqueceu sua senha?
-        </Link>
-
-        <div className="flex items-center gap-4 my-8">
-          <div className="flex-1 h-[1px] bg-border" />
-          <span className="text-muted-foreground text-sm">Ou continue com</span>
-          <div className="flex-1 h-[1px] bg-border" />
-        </div>
-
-        <div className="space-y-4">
-          <Button 
-            variant="outline" 
-            className="w-full h-[60px] text-base"
-            onClick={handleGoogleLogin}
-            type="button"
-          >
-            Continuar com Google
-          </Button>
-        </div>
       </div>
 
       <div className="text-center text-muted-foreground">
-        Não tem uma conta?{" "}
-        <Link to="/signup" className="text-primary font-medium">
-          Cadastre-se
+        Já tem uma conta?{" "}
+        <Link to="/login" className="text-primary font-medium">
+          Faça login
         </Link>
       </div>
     </div>

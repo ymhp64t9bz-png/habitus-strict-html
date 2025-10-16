@@ -13,6 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useHabits } from "@/contexts/HabitsContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function Settings() {
@@ -23,6 +24,12 @@ export default function Settings() {
     clearAllData();
     toast.success("Todos os dados foram apagados");
     navigate("/");
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Você saiu da conta");
+    navigate("/login");
   };
 
   return (
@@ -57,7 +64,7 @@ export default function Settings() {
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
           <button
-            onClick={() => navigate("/login")}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 p-4 hover:bg-primary/5 transition-colors"
           >
             <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center text-destructive">

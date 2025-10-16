@@ -24,11 +24,18 @@ export default function EditProfile() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, updateUser } = useUser();
+  
+  if (!user) {
+    navigate("/login");
+    return null;
+  }
+
   const [name, setName] = useState(user.name);
   const [bio, setBio] = useState(user.bio);
   const [profession, setProfession] = useState(user.profession);
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
   const [selectedAchievements, setSelectedAchievements] = useState<string[]>(user.selectedAchievements);
+  const [saving, setSaving] = useState(false);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -79,20 +86,31 @@ export default function EditProfile() {
     });
   };
 
-  const handleSave = () => {
-    updateUser({
-      name,
-      bio,
-      profession,
-      avatarUrl,
-      selectedAchievements,
-    });
-    
-    toast({
-      title: "Perfil atualizado!",
-      description: "Suas informações foram salvas com sucesso.",
-    });
-    navigate("/profile");
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateUser({
+        name,
+        bio,
+        profession,
+        avatarUrl,
+        selectedAchievements,
+      });
+      
+      toast({
+        title: "Perfil atualizado!",
+        description: "Suas informações foram salvas com sucesso.",
+      });
+      navigate("/profile");
+    } catch (error) {
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível atualizar seu perfil. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -195,8 +213,8 @@ export default function EditProfile() {
           </div>
         </div>
 
-        <Button onClick={handleSave} className="w-full h-[60px] text-base font-bold">
-          Salvar Alterações
+        <Button onClick={handleSave} className="w-full h-[60px] text-base font-bold" disabled={saving}>
+          {saving ? "Salvando..." : "Salvar Alterações"}
         </Button>
       </div>
     </div>

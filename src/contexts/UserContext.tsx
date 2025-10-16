@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
 export interface UserProfile {
   name: string;
@@ -10,37 +12,107 @@ export interface UserProfile {
 }
 
 interface UserContextType {
-  user: UserProfile;
-  updateUser: (updates: Partial<UserProfile>) => void;
+  user: UserProfile | null;
+  authUser: User | null;
+  session: Session | null;
+  loading: boolean;
+  updateUser: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const defaultUser: UserProfile = {
-  name: "João Silva",
-  email: "joao@exemplo.com",
-  bio: "Transformando hábitos em resultados",
-  profession: "Desenvolvedor",
-  avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=joao",
-  selectedAchievements: ["first_habit", "week_streak", "water_champion"],
-};
-
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('userProfile');
-    return saved ? JSON.parse(saved) : defaultUser;
-  });
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem('userProfile', JSON.stringify(user));
-  }, [user]);
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setAuthUser(session?.user ?? null);
+        
+        if (session?.user) {
+          setTimeout(() => {
+            loadUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    );
 
-  const updateUser = (updates: Partial<UserProfile>) => {
-    setUser(prev => ({ ...prev, ...updates }));
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthUser(session?.user ?? null);
+      
+      if (session?.user) {
+        loadUserProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setUser({
+          name: data.name,
+          email: data.email,
+          bio: data.bio || '',
+          profession: data.profession || '',
+          avatarUrl: data.avatar_url,
+          selectedAchievements: data.selected_achievements || [],
+        });
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateUser = async (updates: Partial<UserProfile>) => {
+    if (!authUser) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: updates.name,
+          bio: updates.bio,
+          profession: updates.profession,
+          avatar_url: updates.avatarUrl,
+          selected_achievements: updates.selectedAchievements,
+        })
+        .eq('user_id', authUser.id);
+
+      if (error) throw error;
+
+      setUser(prev => prev ? { ...prev, ...updates } : null);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
   };
 
   return (
-    <UserContext.Provider value={{ user, updateUser }}>
+    <UserContext.Provider value={{ user, authUser, session, loading, updateUser }}>
       {children}
     </UserContext.Provider>
   );

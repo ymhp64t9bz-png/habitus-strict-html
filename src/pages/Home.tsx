@@ -21,8 +21,12 @@ const getGreeting = () => {
 export default function Home() {
   const navigate = useNavigate();
   const { habits, tasks, toggleComplete, updateProgress } = useHabits();
-  const { user } = useUser();
+  const { user, loading } = useUser();
   const greeting = getGreeting();
+
+  if (loading || !user) {
+    return null;
+  }
 
   const completedHabits = habits.filter(h => h.progress === 100).length;
   const progressPercentage = Math.round((completedHabits / habits.length) * 100);

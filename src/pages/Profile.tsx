@@ -20,7 +20,11 @@ const achievementData: Record<string, { name: string; icon: string }> = {
 export default function Profile() {
   const navigate = useNavigate();
   const { habits } = useHabits();
-  const { user } = useUser();
+  const { user, loading } = useUser();
+
+  if (loading || !user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen pb-24">

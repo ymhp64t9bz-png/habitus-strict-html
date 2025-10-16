@@ -2,9 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useUser } from "./contexts/UserContext";
 import Splash from "./pages/Splash";
 import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
+import ResetPassword from "./pages/ResetPassword";
 import Home from "./pages/Home";
 import Progress from "./pages/Progress";
 import Community from "./pages/Community";
@@ -18,6 +21,20 @@ import Subscription from "./pages/Subscription";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { session, loading } = useUser();
+  
+  if (loading) {
+    return <Splash />;
+  }
+  
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -29,17 +46,19 @@ const App = () => (
         <Routes>
           <Route path="/splash" element={<Splash />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/progress" element={<Progress />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/achievements" element={<Achievements />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/edit-habit/:id" element={<EditHabit />} />
-          <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/challenges" element={<Challenges />} />
-          <Route path="/subscription" element={<Subscription />} />
-          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+          <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+          <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/edit-habit/:id" element={<ProtectedRoute><EditHabit /></ProtectedRoute>} />
+          <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+          <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
+          <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+          <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
