@@ -163,6 +163,87 @@
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
   }
 
+  /* Additional gradient colors */
+  .gradient-phone {
+    background: linear-gradient(135deg, hsl(269, 89%, 58%), hsl(289, 89%, 68%));
+  }
+
+  .gradient-gift {
+    background: linear-gradient(135deg, hsl(340, 82%, 62%), hsl(320, 85%, 72%));
+  }
+
+  .gradient-blue {
+    background: linear-gradient(135deg, hsl(201, 96%, 62%), hsl(211, 96%, 72%));
+  }
+
+  .gradient-green {
+    background: linear-gradient(135deg, hsl(142, 71%, 58%), hsl(152, 71%, 68%));
+  }
+
+  .gradient-purple {
+    background: linear-gradient(135deg, hsl(271, 76%, 63%), hsl(281, 76%, 73%));
+  }
+
+  .gradient-orange {
+    background: linear-gradient(135deg, hsl(24, 95%, 63%), hsl(34, 95%, 73%));
+  }
+
+  .gradient-pink {
+    background: linear-gradient(135deg, hsl(328, 86%, 70%), hsl(338, 86%, 80%));
+  }
+
+  .gradient-red {
+    background: linear-gradient(135deg, hsl(0, 84%, 63%), hsl(10, 84%, 73%));
+  }
+
+  .gradient-yellow {
+    background: linear-gradient(135deg, hsl(45, 93%, 63%), hsl(55, 93%, 73%));
+  }
+
+  .gradient-teal {
+    background: linear-gradient(135deg, hsl(173, 80%, 50%), hsl(183, 80%, 60%));
+  }
+
+  .gradient-indigo {
+    background: linear-gradient(135deg, hsl(231, 48%, 58%), hsl(241, 48%, 68%));
+  }
+
+  .gradient-cyan {
+    background: linear-gradient(135deg, hsl(188, 94%, 63%), hsl(198, 94%, 73%));
+  }
+
+  .gradient-slate {
+    background: linear-gradient(135deg, hsl(215, 16%, 57%), hsl(215, 16%, 67%));
+  }
+
+  .gradient-rose {
+    background: linear-gradient(135deg, hsl(350, 89%, 65%), hsl(360, 89%, 75%));
+  }
+
+  .gradient-amber {
+    background: linear-gradient(135deg, hsl(38, 92%, 58%), hsl(48, 92%, 68%));
+  }
+
+  .gradient-lime {
+    background: linear-gradient(135deg, hsl(84, 81%, 58%), hsl(94, 81%, 68%));
+  }
+
+  .gradient-emerald {
+    background: linear-gradient(135deg, hsl(158, 64%, 52%), hsl(168, 64%, 62%));
+  }
+
+  .gradient-sky {
+    background: linear-gradient(135deg, hsl(199, 89%, 58%), hsl(209, 89%, 68%));
+  }
+
+  .gradient-violet {
+    background: linear-gradient(135deg, hsl(258, 90%, 66%), hsl(268, 90%, 76%));
+  }
+
+  .gradient-fuchsia {
+    background: linear-gradient(135deg, hsl(292, 84%, 61%), hsl(302, 84%, 71%));
+  }
+
   /* Trophy animation */
   @keyframes glow {
     0% { opacity: 0.3; }

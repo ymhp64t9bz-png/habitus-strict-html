@@ -62,29 +62,19 @@ export function LiquidFillCard({
       />
 
       {/* Content */}
-      <div className="relative z-10 flex items-center gap-4">
+      <div className="relative z-10 flex items-center gap-3">
         {showCheckButton && (
           <button
             onClick={handleCheckClick}
             className={cn(
-              "min-w-[44px] min-h-[44px] w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all active:scale-95",
+              "min-w-[44px] min-h-[44px] w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all active:scale-95",
               isComplete
                 ? "bg-primary border-primary text-primary-foreground"
                 : "border-muted-foreground/40 active:border-primary"
             )}
             aria-label={isComplete ? "Hábito completo" : "Marcar como completo"}
           >
-            {isComplete && <CheckCircle2 className="w-3.5 h-3.5" />}
-          </button>
-        )}
-
-        {showEditButton && (
-          <button
-            onClick={handleEditClick}
-            className="absolute top-3 right-3 min-w-[44px] min-h-[44px] w-8 h-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center active:bg-background active:scale-95 transition-all"
-            aria-label="Editar hábito"
-          >
-            <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
+            {isComplete && <CheckCircle2 className="w-3 h-3" />}
           </button>
         )}
 
@@ -108,6 +98,16 @@ export function LiquidFillCard({
             <p className="text-xs text-muted-foreground">Tarefa do dia</p>
           )}
         </div>
+
+        {showEditButton && (
+          <button
+            onClick={handleEditClick}
+            className="min-w-[44px] min-h-[44px] w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center active:bg-background active:scale-95 transition-all flex-shrink-0"
+            aria-label="Editar hábito"
+          >
+            <Edit2 className="w-3 h-3 text-muted-foreground" />
+          </button>
+        )}
       </div>
     </div>
   );
