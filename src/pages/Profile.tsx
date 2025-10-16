@@ -1,14 +1,14 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { LiquidFillCard } from "@/components/habits/LiquidFillCard";
-import { initialHabits, achievements } from "@/data/habits";
+import { achievements } from "@/data/habits";
+import { useHabits } from "@/contexts/HabitsContext";
 import { Edit2 } from "lucide-react";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const [habits] = useState(initialHabits);
+  const { habits } = useHabits();
 
   return (
     <div className="min-h-screen pb-24">

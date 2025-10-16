@@ -8,9 +8,17 @@ interface LiquidFillCardProps {
   habit: Habit;
   onToggleComplete?: (id: number) => void;
   onUpdateProgress?: (id: number, value: number) => void;
+  showEditButton?: boolean;
+  showCheckButton?: boolean;
 }
 
-export function LiquidFillCard({ habit, onToggleComplete, onUpdateProgress }: LiquidFillCardProps) {
+export function LiquidFillCard({ 
+  habit, 
+  onToggleComplete, 
+  onUpdateProgress,
+  showEditButton = false,
+  showCheckButton = false 
+}: LiquidFillCardProps) {
   const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -55,25 +63,29 @@ export function LiquidFillCard({ habit, onToggleComplete, onUpdateProgress }: Li
 
       {/* Content */}
       <div className="relative z-10 flex items-center gap-4">
-        <button
-          onClick={handleCheckClick}
-          className={cn(
-            "w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
-            isComplete
-              ? "bg-primary border-primary text-primary-foreground"
-              : "border-muted-foreground/40 hover:border-primary"
-          )}
-        >
-          {isComplete && <CheckCircle2 className="w-4 h-4" />}
-        </button>
+        {showCheckButton && (
+          <button
+            onClick={handleCheckClick}
+            className={cn(
+              "w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
+              isComplete
+                ? "bg-primary border-primary text-primary-foreground"
+                : "border-muted-foreground/40 hover:border-primary"
+            )}
+          >
+            {isComplete && <CheckCircle2 className="w-4 h-4" />}
+          </button>
+        )}
 
-        <button
-          onClick={handleEditClick}
-          className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-          aria-label="Editar"
-        >
-          <Edit2 className="w-4 h-4 text-muted-foreground" />
-        </button>
+        {showEditButton && (
+          <button
+            onClick={handleEditClick}
+            className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+            aria-label="Editar"
+          >
+            <Edit2 className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
 
         <div
           className={cn(

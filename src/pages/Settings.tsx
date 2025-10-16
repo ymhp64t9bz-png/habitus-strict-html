@@ -12,9 +12,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useHabits } from "@/contexts/HabitsContext";
+import { toast } from "sonner";
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { clearAllData } = useHabits();
+
+  const handleClearData = () => {
+    clearAllData();
+    toast.success("Todos os dados foram apagados");
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen">
@@ -76,7 +85,7 @@ export default function Settings() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction className="bg-destructive">Confirmar</AlertDialogAction>
+                <AlertDialogAction onClick={handleClearData} className="bg-destructive">Confirmar</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

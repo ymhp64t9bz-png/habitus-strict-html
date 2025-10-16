@@ -1,37 +1,17 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { LiquidFillCard } from "@/components/habits/LiquidFillCard";
-import { initialHabits, initialTasks } from "@/data/habits";
-import { Flame, Swords } from "lucide-react";
+import { useHabits } from "@/contexts/HabitsContext";
+import { Flame, Swords, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const navigate = useNavigate();
-  const [habits, setHabits] = useState(initialHabits);
-  const [tasks, setTasks] = useState(initialTasks);
+  const { habits, tasks, toggleComplete, updateProgress } = useHabits();
 
   const completedHabits = habits.filter(h => h.progress === 100).length;
   const progressPercentage = Math.round((completedHabits / habits.length) * 100);
-
-  const handleToggleComplete = (id: number) => {
-    setHabits(prev => prev.map(h =>
-      h.id === id ? { ...h, progress: h.progress === 100 ? 0 : 100 } : h
-    ));
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, progress: t.progress === 100 ? 0 : 100 } : t
-    ));
-  };
-
-  const handleUpdateProgress = (id: number, value: number) => {
-    setHabits(prev => prev.map(h => {
-      if (h.id === id && h.target) {
-        const progress = Math.round((value / h.target) * 100);
-        return { ...h, currentValue: value, progress };
-      }
-      return h;
-    }));
-  };
 
   return (
     <div className="min-h-screen pb-24">
@@ -76,8 +56,10 @@ export default function Home() {
               <LiquidFillCard
                 key={habit.id}
                 habit={habit}
-                onToggleComplete={handleToggleComplete}
-                onUpdateProgress={handleUpdateProgress}
+                onToggleComplete={toggleComplete}
+                onUpdateProgress={updateProgress}
+                showEditButton
+                showCheckButton
               />
             ))}
           </div>
@@ -91,13 +73,23 @@ export default function Home() {
                 <LiquidFillCard
                   key={task.id}
                   habit={task}
-                  onToggleComplete={handleToggleComplete}
+                  onToggleComplete={toggleComplete}
+                  showEditButton
+                  showCheckButton
                 />
               ))}
             </div>
           </section>
         )}
       </div>
+
+      <Button
+        onClick={() => navigate("/edit-habit/new")}
+        className="fixed bottom-24 right-5 w-14 h-14 rounded-full shadow-lg"
+        size="icon"
+      >
+        <Plus className="w-6 h-6" />
+      </Button>
 
       <BottomNav />
     </div>

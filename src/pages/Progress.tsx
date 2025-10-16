@@ -1,14 +1,14 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { LiquidFillCard } from "@/components/habits/LiquidFillCard";
 import { FuelTank } from "@/components/progress/FuelTank";
-import { initialHabits } from "@/data/habits";
+import { useHabits } from "@/contexts/HabitsContext";
 
 export default function Progress() {
   const navigate = useNavigate();
-  const [habits] = useState(initialHabits.filter(h => h.type === 'habit'));
+  const { habits: allHabits } = useHabits();
+  const habits = allHabits.filter(h => h.type === 'habit');
   
   const completedHabits = habits.filter(h => h.progress === 100).length;
   const totalProgress = Math.round((completedHabits / habits.length) * 100);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Input } from "@/components/ui/input";
@@ -8,14 +8,22 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { IconPickerModal } from "@/components/habits/IconPickerModal";
 import { ColorPickerModal } from "@/components/habits/ColorPickerModal";
-import { Smile, Palette, ChevronRight, Trash2, Plus } from "lucide-react";
+import { Palette, ChevronRight, Trash2, Plus } from "lucide-react";
 import { HabitType, HabitUnit } from "@/types/habit";
+import { useHabits } from "@/contexts/HabitsContext";
+import { toast } from "sonner";
 
 export default function EditHabit() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [name, setName] = useState("Ler 10 páginas");
-  const [description, setDescription] = useState("Ler 10 páginas por dia para desenvolver o hábito da leitura");
+  const { habits, tasks, updateHabit, deleteHabit, addHabit } = useHabits();
+  
+  const isNew = id === "new";
+  const habitId = isNew ? 0 : parseInt(id || "0");
+  const existingHabit = isNew ? null : [...habits, ...tasks].find(h => h.id === habitId);
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [type, setType] = useState<HabitType>("habit");
   const [unit, setUnit] = useState<HabitUnit>("pages");
   const [target, setTarget] = useState("10");
@@ -26,14 +34,57 @@ export default function EditHabit() {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [targetValue, setTargetValue] = useState("10");
 
+  useEffect(() => {
+    if (existingHabit) {
+      setName(existingHabit.name);
+      setDescription(existingHabit.description);
+      setType(existingHabit.type);
+      setUnit(existingHabit.unit || "pages");
+      setTarget(existingHabit.target?.toString() || "10");
+      setDurationDays(existingHabit.durationDays?.toString() || "30");
+      setIcon(existingHabit.icon);
+      setIconClass(existingHabit.iconClass);
+      setTargetValue(existingHabit.target?.toString() || "10");
+    }
+  }, [existingHabit]);
+
   const handleSave = () => {
-    alert("Hábito atualizado com sucesso!");
+    const habitData = {
+      id: isNew ? Date.now() : habitId,
+      name,
+      description,
+      type,
+      unit,
+      target: parseInt(targetValue),
+      durationDays: unit === "days" ? parseInt(durationDays) as 7 | 15 | 30 | 60 | 90 | 365 : undefined,
+      icon,
+      iconClass,
+      streak: existingHabit?.streak || 0,
+      progress: existingHabit?.progress || 0,
+      currentValue: existingHabit?.currentValue || 0,
+    };
+
+    if (isNew) {
+      addHabit(habitData);
+      toast.success("Hábito criado com sucesso!");
+    } else {
+      updateHabit(habitId, habitData);
+      toast.success("Hábito atualizado com sucesso!");
+    }
     navigate("/");
+  };
+
+  const handleDelete = () => {
+    if (!isNew) {
+      deleteHabit(habitId);
+      toast.success("Hábito excluído com sucesso!");
+      navigate("/");
+    }
   };
 
   return (
     <div className="min-h-screen">
-      <Header title="Editar Hábito" showBack onBack={() => navigate("/")} />
+      <Header title={isNew ? "Novo Hábito" : "Editar Hábito"} showBack onBack={() => navigate("/")} />
 
       <div className="max-w-[414px] mx-auto p-5">
         <div className="mb-6">
@@ -176,16 +227,19 @@ export default function EditHabit() {
         </div>
 
         <Button onClick={handleSave} className="w-full h-[60px] text-base font-bold mb-3">
-          Salvar Alterações
+          {isNew ? "Criar Hábito" : "Salvar Alterações"}
         </Button>
 
-        <Button
-          variant="destructive"
-          className="w-full h-[60px] text-base font-bold flex items-center justify-center gap-2"
-        >
-          <Trash2 className="w-5 h-5" />
-          <span>Excluir {type === 'habit' ? 'Hábito' : 'Tarefa'}</span>
-        </Button>
+        {!isNew && (
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            className="w-full h-[60px] text-base font-bold flex items-center justify-center gap-2"
+          >
+            <Trash2 className="w-5 h-5" />
+            <span>Excluir {type === 'habit' ? 'Hábito' : 'Tarefa'}</span>
+          </Button>
+        )}
       </div>
 
       <IconPickerModal
