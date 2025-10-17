@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -6,6 +7,7 @@ import { useHabits } from "@/contexts/HabitsContext";
 import { useUser } from "@/contexts/UserContext";
 import { Flame, Swords, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SubscriptionModal } from "@/components/subscription/SubscriptionModal";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -21,8 +23,20 @@ const getGreeting = () => {
 export default function Home() {
   const navigate = useNavigate();
   const { habits, tasks, toggleComplete, updateProgress } = useHabits();
-  const { user, loading } = useUser();
+  const { user, loading, needsSubscription, checkSubscription } = useUser();
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const greeting = getGreeting();
+
+  useEffect(() => {
+    if (needsSubscription && !loading) {
+      setShowSubscriptionModal(true);
+    }
+  }, [needsSubscription, loading]);
+
+  const handleSubscriptionComplete = async () => {
+    await checkSubscription();
+    setShowSubscriptionModal(false);
+  };
 
   if (loading || !user) {
     return null;
@@ -32,8 +46,14 @@ export default function Home() {
   const progressPercentage = Math.round((completedHabits / habits.length) * 100);
 
   return (
-    <div className="min-h-screen pb-24">
-      <Header title="Início" showSettings showThemeToggle />
+    <>
+      <SubscriptionModal 
+        open={showSubscriptionModal} 
+        onSubscriptionComplete={handleSubscriptionComplete}
+      />
+      
+      <div className="min-h-screen pb-24">
+        <Header title="Início" showSettings showThemeToggle />
 
       <div className="max-w-[414px] mx-auto p-5">
         <section className="gradient-primary text-white rounded-2xl p-5 my-5 text-center shadow-lg shadow-primary/20 relative">
@@ -110,7 +130,8 @@ export default function Home() {
         <Plus className="w-6 h-6" />
       </Button>
 
-      <BottomNav />
-    </div>
+        <BottomNav />
+      </div>
+    </>
   );
 }

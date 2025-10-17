@@ -11,6 +11,13 @@ export interface UserProfile {
   avatarUrl: string;
   selectedAchievements: string[];
   premium: boolean;
+  subscriptionStatus?: {
+    subscribed: boolean;
+    inTrial: boolean;
+    trialEnd?: string;
+    subscriptionEnd?: string;
+    productId?: string;
+  };
 }
 
 interface UserContextType {
@@ -18,7 +25,10 @@ interface UserContextType {
   authUser: User | null;
   session: Session | null;
   loading: boolean;
+  hasActiveAccess: boolean;
+  needsSubscription: boolean;
   updateUser: (updates: Partial<UserProfile>) => Promise<void>;
+  checkSubscription: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -28,6 +38,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscriptionChecked, setSubscriptionChecked] = useState(false);
+
+  const hasActiveAccess = user?.premium || user?.subscriptionStatus?.inTrial || false;
+  const needsSubscription = session !== null && !hasActiveAccess && subscriptionChecked;
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -62,6 +76,35 @@ export function UserProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const checkSubscription = async () => {
+    if (!authUser) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      
+      if (error) {
+        logError('Check Subscription', error);
+        return;
+      }
+
+      setUser(prev => prev ? {
+        ...prev,
+        premium: data.subscribed || false,
+        subscriptionStatus: {
+          subscribed: data.subscribed || false,
+          inTrial: data.in_trial || false,
+          trialEnd: data.trial_end,
+          subscriptionEnd: data.subscription_end,
+          productId: data.product_id,
+        }
+      } : null);
+    } catch (error) {
+      logError('Check Subscription', error);
+    } finally {
+      setSubscriptionChecked(true);
+    }
+  };
+
   const loadUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -82,9 +125,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
           selectedAchievements: data.selected_achievements || [],
           premium: data.premium || false,
         });
+        
+        // Verifica assinatura após carregar perfil
+        setTimeout(() => {
+          checkSubscription();
+        }, 0);
       }
     } catch (error) {
       logError('Load Profile', error);
+      setSubscriptionChecked(true);
     } finally {
       setLoading(false);
     }
@@ -115,7 +164,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ user, authUser, session, loading, updateUser }}>
+    <UserContext.Provider value={{ 
+      user, 
+      authUser, 
+      session, 
+      loading, 
+      hasActiveAccess,
+      needsSubscription,
+      updateUser,
+      checkSubscription 
+    }}>
       {children}
     </UserContext.Provider>
   );

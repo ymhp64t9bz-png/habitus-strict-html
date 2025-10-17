@@ -75,28 +75,51 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Check for active or trialing subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
-      limit: 1,
+      status: "all",
+      limit: 10,
     });
-    const hasActiveSub = subscriptions.data.length > 0;
+    
+    let hasActiveSub = false;
+    let inTrial = false;
     let productId = null;
     let subscriptionEnd = null;
+    let trialEnd = null;
 
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id });
-      productId = subscription.items.data[0].price.product;
+    // Find active or trialing subscription
+    const activeOrTrialSub = subscriptions.data.find(
+      sub => sub.status === "active" || sub.status === "trialing"
+    );
+
+    if (activeOrTrialSub) {
+      hasActiveSub = activeOrTrialSub.status === "active";
+      inTrial = activeOrTrialSub.status === "trialing";
+      
+      subscriptionEnd = new Date(activeOrTrialSub.current_period_end * 1000).toISOString();
+      
+      if (inTrial && activeOrTrialSub.trial_end) {
+        trialEnd = new Date(activeOrTrialSub.trial_end * 1000).toISOString();
+        logStep("Trial subscription found", { 
+          subscriptionId: activeOrTrialSub.id,
+          trialEnd 
+        });
+      } else {
+        logStep("Active subscription found", { 
+          subscriptionId: activeOrTrialSub.id 
+        });
+      }
+      
+      productId = activeOrTrialSub.items.data[0].price.product;
       logStep("Determined subscription tier", { productId });
       
       await supabaseClient
         .from('profiles')
-        .update({ premium: true })
+        .update({ premium: hasActiveSub || inTrial })
         .eq('user_id', user.id);
     } else {
-      logStep("No active subscription found");
+      logStep("No active or trial subscription found");
       
       await supabaseClient
         .from('profiles')
@@ -106,6 +129,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
+      in_trial: inTrial,
+      trial_end: trialEnd,
       product_id: productId,
       subscription_end: subscriptionEnd
     }), {

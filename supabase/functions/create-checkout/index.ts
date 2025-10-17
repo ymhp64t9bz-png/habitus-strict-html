@@ -31,6 +31,9 @@ serve(async (req) => {
       throw new Error("User not authenticated");
     }
 
+    // Parse request body to get selected price
+    const { priceId } = await req.json();
+
     // Rate limiting: max 5 checkout sessions per minute
     if (!checkRateLimit(user.id, 5)) {
       return new Response(
@@ -63,13 +66,22 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SIvlKCKtQfj4N8hpCYwIxZN",
+          price: priceId || "price_monthly_1490",
           quantity: 1,
         },
       ],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 3,
+        trial_settings: {
+          end_behavior: {
+            missing_payment_method: 'cancel',
+          },
+        },
+      },
+      payment_method_collection: 'if_required',
       success_url: `${origin}/`,
-      cancel_url: `${origin}/subscription`,
+      cancel_url: `${origin}/`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
