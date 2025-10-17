@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { sanitizeAuthError } from "@/lib/errorHandler";
+import { sanitizeAuthError, logError } from "@/lib/errorHandler";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Email inválido").max(255),
@@ -45,6 +45,7 @@ export default function Login() {
       });
 
       if (error) {
+        logError('Login', error);
         toast({
           title: "Erro ao fazer login",
           description: sanitizeAuthError(error),
@@ -78,6 +79,7 @@ export default function Login() {
     });
 
     if (error) {
+      logError('Google Login', error);
       toast({
         title: "Erro ao fazer login com Google",
         description: sanitizeAuthError(error),

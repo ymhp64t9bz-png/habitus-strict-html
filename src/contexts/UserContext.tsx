@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { logError } from '@/lib/errorHandler';
 
 export interface UserProfile {
   name: string;
@@ -83,9 +84,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Error loading profile:', error);
-      }
+      logError('Load Profile', error);
     } finally {
       setLoading(false);
     }
@@ -110,9 +109,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       setUser(prev => prev ? { ...prev, ...updates } : null);
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Error updating profile:', error);
-      }
+      logError('Update Profile', error);
       throw error;
     }
   };

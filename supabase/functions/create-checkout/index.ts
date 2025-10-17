@@ -1,32 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, sanitizeErrorMessage } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Simple in-memory rate limiter
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now();
-  const userLimit = rateLimitStore.get(userId);
-  
-  if (!userLimit || now > userLimit.resetTime) {
-    // Reset or create new limit: 5 requests per minute
-    rateLimitStore.set(userId, { count: 1, resetTime: now + 60000 });
-    return true;
-  }
-  
-  if (userLimit.count >= 5) {
-    return false; // Rate limit exceeded
-  }
-  
-  userLimit.count++;
-  return true;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -41,23 +21,28 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      throw new Error("No authorization header");
+      throw new Error("Authorization required");
     }
 
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-
-    // Rate limiting check
-    if (!checkRateLimit(user.id)) {
-      return new Response(JSON.stringify({ error: "Muitas tentativas. Aguarde um minuto." }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 429,
-      });
+    if (!user?.email) {
+      throw new Error("User not authenticated");
     }
 
-    // Validate origin for security
+    // Rate limiting: max 5 checkout sessions per minute
+    if (!checkRateLimit(user.id, 5)) {
+      return new Response(
+        JSON.stringify({ error: "Muitas tentativas. Aguarde um momento." }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429,
+        }
+      );
+    }
+
+    // Validate origin for redirect URLs
     const origin = req.headers.get("origin");
     if (!origin) {
       throw new Error("Invalid request origin");
@@ -92,12 +77,12 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error('[CREATE-CHECKOUT ERROR]:', error);
-    return new Response(JSON.stringify({ 
-      error: "Erro ao processar pagamento. Tente novamente." 
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ error: sanitizeErrorMessage(error) }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
   }
 });

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, sanitizeErrorMessage } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,27 +12,6 @@ const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CUSTOMER-PORTAL] ${step}${detailsStr}`);
 };
-
-// Simple in-memory rate limiter
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now();
-  const userLimit = rateLimitStore.get(userId);
-  
-  if (!userLimit || now > userLimit.resetTime) {
-    // Reset or create new limit: 5 requests per minute
-    rateLimitStore.set(userId, { count: 1, resetTime: now + 60000 });
-    return true;
-  }
-  
-  if (userLimit.count >= 5) {
-    return false;
-  }
-  
-  userLimit.count++;
-  return true;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -52,26 +32,28 @@ serve(async (req) => {
     );
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader) throw new Error("Authorization required");
     logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error`);
+    if (userError) throw new Error("Authentication failed");
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id });
 
-    // Rate limiting check
-    if (!checkRateLimit(user.id)) {
-      logStep("Rate limit exceeded", { userId: user.id });
-      return new Response(JSON.stringify({ error: "Muitas tentativas. Aguarde um minuto." }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 429,
-      });
+    // Rate limiting: max 5 portal sessions per minute
+    if (!checkRateLimit(user.id, 5)) {
+      return new Response(
+        JSON.stringify({ error: "Muitas tentativas. Aguarde um momento." }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429,
+        }
+      );
     }
 
-    // Validate origin
+    // Validate origin for redirect URL
     const origin = req.headers.get("origin");
     if (!origin) {
       throw new Error("Invalid request origin");
@@ -80,7 +62,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     if (customers.data.length === 0) {
-      throw new Error("Nenhum cliente encontrado");
+      throw new Error("No customer found");
     }
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
@@ -89,19 +71,20 @@ serve(async (req) => {
       customer: customerId,
       return_url: `${origin}/`,
     });
-    logStep("Customer portal session created");
+    logStep("Customer portal session created", { sessionId: portalSession.id });
 
     return new Response(JSON.stringify({ url: portalSession.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
-    logStep("ERROR in customer-portal");
-    return new Response(JSON.stringify({ 
-      error: "Erro ao abrir portal. Tente novamente." 
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    logStep("ERROR in customer-portal", { message: error });
+    return new Response(
+      JSON.stringify({ error: sanitizeErrorMessage(error) }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
   }
 });
