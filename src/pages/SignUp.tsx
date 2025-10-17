@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { sanitizeAuthError } from "@/lib/errorHandler";
 
 const signUpSchema = z.object({
   name: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres").max(100),
@@ -50,19 +51,11 @@ export default function SignUp() {
       });
 
       if (error) {
-        if (error.message.includes("already registered")) {
-          toast({
-            title: "Erro ao cadastrar",
-            description: "Este email já está cadastrado. Faça login.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Erro ao cadastrar",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Erro ao cadastrar",
+          description: sanitizeAuthError(error),
+          variant: "destructive",
+        });
         return;
       }
 

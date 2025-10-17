@@ -7,6 +7,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory rate limiter
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const userLimit = rateLimitStore.get(userId);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    // Reset or create new limit: 5 requests per minute
+    rateLimitStore.set(userId, { count: 1, resetTime: now + 60000 });
+    return true;
+  }
+  
+  if (userLimit.count >= 5) {
+    return false; // Rate limit exceeded
+  }
+  
+  userLimit.count++;
+  return true;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -18,11 +39,29 @@ serve(async (req) => {
   );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("No authorization header");
+    }
+
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
+
+    // Rate limiting check
+    if (!checkRateLimit(user.id)) {
+      return new Response(JSON.stringify({ error: "Muitas tentativas. Aguarde um minuto." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 429,
+      });
+    }
+
+    // Validate origin for security
+    const origin = req.headers.get("origin");
+    if (!origin) {
+      throw new Error("Invalid request origin");
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
@@ -44,8 +83,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/`,
-      cancel_url: `${req.headers.get("origin")}/subscription`,
+      success_url: `${origin}/`,
+      cancel_url: `${origin}/subscription`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
@@ -53,8 +92,10 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    console.error('[CREATE-CHECKOUT ERROR]:', error);
+    return new Response(JSON.stringify({ 
+      error: "Erro ao processar pagamento. Tente novamente." 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

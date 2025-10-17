@@ -12,6 +12,27 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Simple in-memory rate limiter
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const userLimit = rateLimitStore.get(userId);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    // Reset or create new limit: 10 requests per minute
+    rateLimitStore.set(userId, { count: 1, resetTime: now + 60000 });
+    return true;
+  }
+  
+  if (userLimit.count >= 10) {
+    return false;
+  }
+  
+  userLimit.count++;
+  return true;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -38,10 +59,19 @@ serve(async (req) => {
     logStep("Authenticating user with token");
     
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    if (userError) throw new Error(`Authentication error`);
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    if (!user?.email) throw new Error("User not authenticated");
+    logStep("User authenticated", { userId: user.id });
+
+    // Rate limiting check
+    if (!checkRateLimit(user.id)) {
+      logStep("Rate limit exceeded", { userId: user.id });
+      return new Response(JSON.stringify({ error: "Muitas tentativas. Aguarde um minuto." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 429,
+      });
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -49,7 +79,6 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No customer found, updating unsubscribed state");
       
-      // Update user profile to mark as not premium
       await supabaseClient
         .from('profiles')
         .update({ premium: false })
@@ -76,11 +105,10 @@ serve(async (req) => {
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      logStep("Active subscription found", { subscriptionId: subscription.id });
       productId = subscription.items.data[0].price.product;
       logStep("Determined subscription tier", { productId });
       
-      // Update user profile to mark as premium
       await supabaseClient
         .from('profiles')
         .update({ premium: true })
@@ -88,7 +116,6 @@ serve(async (req) => {
     } else {
       logStep("No active subscription found");
       
-      // Update user profile to mark as not premium
       await supabaseClient
         .from('profiles')
         .update({ premium: false })
@@ -104,9 +131,10 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in check-subscription", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    logStep("ERROR in check-subscription");
+    return new Response(JSON.stringify({ 
+      error: "Erro ao verificar assinatura. Tente novamente." 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

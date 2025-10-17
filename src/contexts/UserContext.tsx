@@ -83,7 +83,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error loading profile:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -108,7 +110,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       setUser(prev => prev ? { ...prev, ...updates } : null);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error updating profile:', error);
+      }
       throw error;
     }
   };
