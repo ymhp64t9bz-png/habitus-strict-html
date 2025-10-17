@@ -138,7 +138,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          id: string | null
+          name: string | null
+          premium: boolean | null
+          profession: string | null
+          selected_achievements: string[] | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          id?: string | null
+          name?: string | null
+          premium?: boolean | null
+          profession?: string | null
+          selected_achievements?: string[] | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          id?: string | null
+          name?: string | null
+          premium?: boolean | null
+          profession?: string | null
+          selected_achievements?: string[] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
