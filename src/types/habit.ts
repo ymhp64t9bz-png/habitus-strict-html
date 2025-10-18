@@ -9,6 +9,7 @@ export interface Habit {
   is_complete: boolean;
   is_task: boolean;
   user_id: string;
+  unit?: string;
   created_at?: string;
   updated_at?: string;
 }

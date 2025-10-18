@@ -58,6 +58,7 @@ export type Database = {
           is_complete: boolean | null
           is_task: boolean | null
           title: string
+          unit: string | null
           updated_at: string
           user_id: string
         }
@@ -72,6 +73,7 @@ export type Database = {
           is_complete?: boolean | null
           is_task?: boolean | null
           title: string
+          unit?: string | null
           updated_at?: string
           user_id: string
         }
@@ -86,6 +88,7 @@ export type Database = {
           is_complete?: boolean | null
           is_task?: boolean | null
           title?: string
+          unit?: string | null
           updated_at?: string
           user_id?: string
         }

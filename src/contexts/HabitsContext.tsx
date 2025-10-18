@@ -15,6 +15,7 @@ interface Habit {
   is_complete: boolean;
   is_task: boolean;
   user_id: string;
+  unit?: string;
 }
 
 interface HabitsContextType {

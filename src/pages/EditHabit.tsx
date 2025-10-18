@@ -20,6 +20,7 @@ export default function EditHabit() {
 
   const [title, setTitle] = useState("");
   const [goalValue, setGoalValue] = useState("10");
+  const [unit, setUnit] = useState("unidade");
   const [icon, setIcon] = useState("📚");
   const [color, setColor] = useState("#8B5CF6");
   const [isTask, setIsTask] = useState(false);
@@ -30,6 +31,7 @@ export default function EditHabit() {
     if (existingHabit) {
       setTitle(existingHabit.title);
       setGoalValue(existingHabit.goal_value?.toString() || "10");
+      setUnit(existingHabit.unit || "unidade");
       setIcon(existingHabit.icon);
       setColor(existingHabit.color);
       setIsTask(existingHabit.is_task);
@@ -43,6 +45,7 @@ export default function EditHabit() {
       color,
       icon,
       goal_value: parseInt(goalValue) || 1,
+      unit: unit || "unidade",
       current_value: existingHabit?.current_value || 0,
       is_complete: existingHabit?.is_complete || false,
       is_task: isTask,
@@ -98,17 +101,30 @@ export default function EditHabit() {
         </div>
 
         {!isTask && (
-          <div>
-            <Label htmlFor="goalValue">Meta</Label>
-            <Input
-              id="goalValue"
-              type="number"
-              value={goalValue}
-              onChange={(e) => setGoalValue(e.target.value)}
-              placeholder="10"
-              className="mt-2"
-            />
-          </div>
+          <>
+            <div>
+              <Label htmlFor="goalValue">Meta (Quantidade)</Label>
+              <Input
+                id="goalValue"
+                type="number"
+                value={goalValue}
+                onChange={(e) => setGoalValue(e.target.value)}
+                placeholder="10"
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="unit">Unidade de Medida</Label>
+              <Input
+                id="unit"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="Ex: páginas, km, L, minutos"
+                className="mt-2"
+              />
+            </div>
+          </>
         )}
 
         <div>

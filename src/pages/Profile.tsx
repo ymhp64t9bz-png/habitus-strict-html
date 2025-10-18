@@ -3,21 +3,13 @@ import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Edit2, Trophy } from "lucide-react";
+import { Edit2, Trophy, Lock } from "lucide-react";
 import { LiquidFillCard } from "@/components/habits/LiquidFillCard";
 import { useHabits } from "@/contexts/HabitsContext";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-
-const achievementData: Record<string, { name: string; icon: string }> = {
-  first_habit: { name: "Primeiro Hábito", icon: "🎯" },
-  week_streak: { name: "7 Dias Seguidos", icon: "🔥" },
-  water_champion: { name: "Campeão da Água", icon: "💧" },
-  early_bird: { name: "Madrugador", icon: "🌅" },
-  book_lover: { name: "Amante dos Livros", icon: "📚" },
-  fitness_master: { name: "Mestre Fitness", icon: "💪" },
-};
+import { achievements } from "@/data/achievements";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -38,8 +30,10 @@ export default function Profile() {
     try {
       const { data, error } = await supabase
         .from('user_achievements')
-        .select('achievement_id')
-        .eq('user_id', user?.user_id);
+        .select('achievement_id, unlocked_at')
+        .eq('user_id', user?.user_id)
+        .order('unlocked_at', { ascending: false })
+        .limit(3);
 
       if (error) throw error;
       setUnlockedAchievements(data || []);
@@ -47,6 +41,16 @@ export default function Profile() {
       console.error('Error loading achievements:', error);
     }
   };
+
+  // Pegar as 3 melhores conquistas ou preencher com cadeados
+  const featuredAchievements = Array.from({ length: 3 }, (_, index) => {
+    if (index < unlockedAchievements.length) {
+      const achievementId = unlockedAchievements[index].achievement_id;
+      const achievement = achievements.find(a => a.id === achievementId);
+      return achievement ? { ...achievement, locked: false } : null;
+    }
+    return { locked: true };
+  }).filter(Boolean);
 
   if (loading || !user) {
     return null;
@@ -104,19 +108,24 @@ export default function Profile() {
             Conquistas em Destaque
           </h3>
           <div className="grid grid-cols-3 gap-3">
-            {user.selectedAchievements.map((achievementId) => {
-              const achievement = achievementData[achievementId];
-              if (!achievement) return null;
-              return (
-                <div
-                  key={achievementId}
-                  className="bg-card rounded-xl p-4 flex flex-col items-center justify-center text-center shadow-sm"
-                >
-                  <span className="text-3xl mb-2">{achievement.icon}</span>
-                  <span className="text-xs font-medium">{achievement.name}</span>
-                </div>
-              );
-            })}
+            {featuredAchievements.map((achievement: any, index) => (
+              <div
+                key={index}
+                className="bg-card rounded-xl p-4 flex flex-col items-center justify-center text-center shadow-sm min-h-[100px]"
+              >
+                {achievement.locked ? (
+                  <>
+                    <Lock className="w-8 h-8 text-muted-foreground mb-2" />
+                    <span className="text-xs text-muted-foreground">Nenhuma conquista desbloqueada</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-3xl mb-2">{achievement.icon}</span>
+                    <span className="text-xs font-medium">{achievement.name}</span>
+                  </>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 

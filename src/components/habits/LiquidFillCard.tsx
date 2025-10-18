@@ -94,7 +94,7 @@ export function LiquidFillCard({
           <p className="font-semibold text-foreground truncate">{habit.title}</p>
           {!habit.is_task && (
             <p className="text-sm text-muted-foreground">
-              {habit.current_value || 0}/{habit.goal_value}
+              {habit.current_value || 0}/{habit.goal_value} {habit.unit || 'unidade'}
             </p>
           )}
           {habit.is_task && (
