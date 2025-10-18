@@ -12,8 +12,6 @@ export interface Habit {
   unit?: string;
   created_at?: string;
   updated_at?: string;
-  last_completed_date?: string;
-  broken?: boolean;
 }
 
 export interface CommunityPost {

@@ -43,10 +43,8 @@ export default function Home() {
     return null;
   }
 
-  // Calcular progresso baseado nos dias cumpridos vs total de dias
-  const totalDays = habits.reduce((sum, h) => sum + h.goal_value, 0);
-  const completedDays = habits.reduce((sum, h) => sum + h.current_value, 0);
-  const progressPercentage = totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
+  const completedHabits = habits.filter(h => h.is_complete).length;
+  const progressPercentage = habits.length > 0 ? Math.round((completedHabits / habits.length) * 100) : 0;
 
   return (
     <>
@@ -74,8 +72,8 @@ export default function Home() {
         </section>
 
         <section className="bg-card rounded-2xl p-4 my-5 shadow-sm">
-          <p className="text-sm text-primary font-medium mb-1">Progresso Geral</p>
-          <p className="text-lg mb-2">{completedDays}/{totalDays} dias cumpridos</p>
+          <p className="text-sm text-primary font-medium mb-1">Progresso Hoje</p>
+          <p className="text-lg mb-2">{completedHabits}/{habits.length} hábitos concluídos</p>
           <div className="w-full h-2 bg-primary/20 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all"
@@ -111,14 +109,14 @@ export default function Home() {
           <section className="my-6">
             <h2 className="text-xl font-bold mb-4">Tarefas de Hoje</h2>
             <div className="space-y-4">
-            {tasks.map((task) => (
-              <LiquidFillCard
-                key={task.id}
-                habit={task}
-                onUpdateProgress={updateProgress}
-                showEditButton
-              />
-            ))}
+              {tasks.map((task) => (
+                <LiquidFillCard
+                  key={task.id}
+                  habit={task}
+                  onToggleComplete={toggleComplete}
+                  showEditButton
+                />
+              ))}
             </div>
           </section>
         )}
