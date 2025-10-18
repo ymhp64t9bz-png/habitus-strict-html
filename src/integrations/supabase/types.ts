@@ -48,6 +48,7 @@ export type Database = {
       }
       habits: {
         Row: {
+          broken: boolean | null
           color: string
           created_at: string
           current_value: number
@@ -57,12 +58,14 @@ export type Database = {
           id: string
           is_complete: boolean | null
           is_task: boolean | null
+          last_completed_date: string | null
           title: string
           unit: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          broken?: boolean | null
           color: string
           created_at?: string
           current_value?: number
@@ -72,12 +75,14 @@ export type Database = {
           id?: string
           is_complete?: boolean | null
           is_task?: boolean | null
+          last_completed_date?: string | null
           title: string
           unit?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          broken?: boolean | null
           color?: string
           created_at?: string
           current_value?: number
@@ -87,6 +92,7 @@ export type Database = {
           id?: string
           is_complete?: boolean | null
           is_task?: boolean | null
+          last_completed_date?: string | null
           title?: string
           unit?: string | null
           updated_at?: string

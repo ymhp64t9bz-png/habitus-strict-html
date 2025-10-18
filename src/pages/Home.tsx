@@ -43,8 +43,10 @@ export default function Home() {
     return null;
   }
 
-  const completedHabits = habits.filter(h => h.is_complete).length;
-  const progressPercentage = habits.length > 0 ? Math.round((completedHabits / habits.length) * 100) : 0;
+  // Calcular progresso geral baseado em dias totais cumpridos
+  const totalDaysCompleted = habits.reduce((sum, h) => sum + (h.current_value || 0), 0);
+  const totalDaysGoal = habits.reduce((sum, h) => sum + h.goal_value, 0);
+  const progressPercentage = totalDaysGoal > 0 ? Math.round((totalDaysCompleted / totalDaysGoal) * 100) : 0;
 
   return (
     <>
@@ -72,8 +74,8 @@ export default function Home() {
         </section>
 
         <section className="bg-card rounded-2xl p-4 my-5 shadow-sm">
-          <p className="text-sm text-primary font-medium mb-1">Progresso Hoje</p>
-          <p className="text-lg mb-2">{completedHabits}/{habits.length} hábitos concluídos</p>
+          <p className="text-sm text-primary font-medium mb-1">Progresso Geral</p>
+          <p className="text-lg mb-2">{totalDaysCompleted}/{totalDaysGoal} dias cumpridos</p>
           <div className="w-full h-2 bg-primary/20 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all"
@@ -114,6 +116,7 @@ export default function Home() {
                   key={task.id}
                   habit={task}
                   onToggleComplete={toggleComplete}
+                  onUpdateProgress={updateProgress}
                   showEditButton
                 />
               ))}

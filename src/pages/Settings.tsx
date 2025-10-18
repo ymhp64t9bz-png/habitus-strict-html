@@ -53,9 +53,9 @@ export default function Settings() {
       await supabase
         .from('habits')
         .insert([
-          { user_id: user.id, title: 'Ler por 21 dias', frequency: 'daily', color: 'gradient-book', icon: '📚', goal_value: 21, current_value: 0, is_task: false, unit: 'dias' },
-          { user_id: user.id, title: 'Caminhar por 21 dias', frequency: 'daily', color: 'gradient-walk', icon: '🚶', goal_value: 21, current_value: 0, is_task: false, unit: 'dias' },
-          { user_id: user.id, title: 'Meditar por 21 dias', frequency: 'daily', color: 'gradient-meditate', icon: '🧘', goal_value: 21, current_value: 0, is_task: false, unit: 'dias' }
+          { user_id: user.id, title: 'Ler por 21 dias', frequency: 'daily', color: 'gradient-book', icon: '📚', goal_value: 21, current_value: 0, is_task: false, unit: 'dias', last_completed_date: null, broken: false },
+          { user_id: user.id, title: 'Caminhar por 21 dias', frequency: 'daily', color: 'gradient-walk', icon: '🚶', goal_value: 21, current_value: 0, is_task: false, unit: 'dias', last_completed_date: null, broken: false },
+          { user_id: user.id, title: 'Meditar por 21 dias', frequency: 'daily', color: 'gradient-meditate', icon: '🧘', goal_value: 21, current_value: 0, is_task: false, unit: 'dias', last_completed_date: null, broken: false }
         ]);
 
       clearAllData();

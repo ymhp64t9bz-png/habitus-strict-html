@@ -17,24 +17,26 @@ export async function updateStreakOnCompletion(userId: string) {
     
     let newStreak = profile?.streak || 0;
     
-    // Se já completou hoje, não fazer nada
+    // Se já atualizou o streak hoje, não fazer nada
     if (lastDate === today) {
       return;
     }
 
-    // Verificar se todos os hábitos de hoje foram completados
+    // Buscar todos os hábitos (não tasks)
     const { data: habits, error: habitsError } = await supabase
       .from('habits')
-      .select('id, is_complete, is_task')
+      .select('id, last_completed_date, broken')
       .eq('user_id', userId)
-      .eq('is_task', false);
+      .eq('is_task', false)
+      .eq('broken', false);
 
     if (habitsError) throw habitsError;
 
-    const allCompleted = habits?.every(h => h.is_complete) || false;
+    // Verificar se todos os hábitos foram completados hoje
+    const allCompletedToday = habits?.every(h => h.last_completed_date === today) || false;
 
-    if (!allCompleted) {
-      return; // Não atualizar streak se nem todos os hábitos foram completados
+    if (!allCompletedToday) {
+      return; // Não atualizar streak se nem todos os hábitos foram completados hoje
     }
 
     // Calcular diferença de dias

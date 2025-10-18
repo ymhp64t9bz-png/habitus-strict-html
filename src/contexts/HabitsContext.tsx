@@ -43,8 +43,45 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
     if (user?.user_id) {
       loadHabits();
       checkStreakIntegrity(user.user_id);
+      checkBrokenHabits();
     }
   }, [user?.user_id]);
+
+  const checkBrokenHabits = async () => {
+    if (!user?.user_id) return;
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      const { data: habitsToCheck, error } = await supabase
+        .from('habits')
+        .select('*')
+        .eq('user_id', user.user_id)
+        .eq('is_task', false)
+        .eq('broken', false)
+        .neq('current_value', 0);
+
+      if (error) throw error;
+
+      for (const habit of habitsToCheck || []) {
+        const lastDate = habit.last_completed_date as string | null | undefined;
+        
+        if (lastDate && lastDate < yesterdayStr) {
+          await supabase
+            .from('habits')
+            .update({ broken: true })
+            .eq('id', habit.id);
+        }
+      }
+
+      await loadHabits();
+    } catch (error) {
+      console.error('Error checking broken habits:', error);
+    }
+  };
 
   const loadHabits = async () => {
     if (!user?.user_id) return;
@@ -173,32 +210,71 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
     if (!user?.user_id) return;
 
     try {
-      const habit = habits.find(h => h.id === id);
-      if (!habit) return;
+      const allItems = [...habits, ...tasks];
+      const item = allItems.find(h => h.id === id);
+      if (!item) return;
 
-      const isComplete = value >= habit.goal_value;
+      const today = new Date().toISOString().split('T')[0];
 
-      const { error } = await supabase
-        .from('habits')
-        .update({
-          current_value: value,
-          is_complete: isComplete,
-        })
-        .eq('id', id)
-        .eq('user_id', user.user_id);
+      // Para hábitos (não tasks)
+      if (!item.is_task) {
+        // Verificar se já completou hoje
+        const lastCompletedDate = (item as any).last_completed_date as string | null | undefined;
+        if (lastCompletedDate === today) {
+          return; // Já completou hoje, não fazer nada
+        }
 
-      if (error) throw error;
+        // Incrementar current_value em 1 e marcar como completo hoje
+        const newValue = (item.current_value || 0) + 1;
+        const isComplete = newValue >= item.goal_value;
 
-      if (isComplete) {
+        const { error } = await supabase
+          .from('habits')
+          .update({
+            current_value: newValue,
+            is_complete: isComplete,
+            last_completed_date: today,
+          })
+          .eq('id', id)
+          .eq('user_id', user.user_id);
+
+        if (error) throw error;
+
         await supabase
           .from('habit_completions')
           .insert({
             habit_id: id,
             user_id: user.user_id,
-            value: value,
+            value: 1,
           });
 
+        // Atualizar streak
         await updateStreakOnCompletion(user.user_id);
+
+      } else {
+        // Para tasks, funciona como antes (incrementa normalmente)
+        const isComplete = value >= item.goal_value;
+
+        const { error } = await supabase
+          .from('habits')
+          .update({
+            current_value: value,
+            is_complete: isComplete,
+          })
+          .eq('id', id)
+          .eq('user_id', user.user_id);
+
+        if (error) throw error;
+
+        if (isComplete) {
+          await supabase
+            .from('habit_completions')
+            .insert({
+              habit_id: id,
+              user_id: user.user_id,
+              value: value,
+            });
+        }
       }
 
       await loadHabits();
