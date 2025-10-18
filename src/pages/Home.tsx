@@ -100,7 +100,6 @@ export default function Home() {
                 onToggleComplete={toggleComplete}
                 onUpdateProgress={updateProgress}
                 showEditButton
-                showCheckButton
               />
             ))}
           </div>
@@ -116,7 +115,6 @@ export default function Home() {
                   habit={task}
                   onToggleComplete={toggleComplete}
                   showEditButton
-                  showCheckButton
                 />
               ))}
             </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Input } from "@/components/ui/input";
@@ -6,19 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Camera, Trophy } from "lucide-react";
+import { Camera, Trophy, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
+import { supabase } from "@/integrations/supabase/client";
+import { achievements as allAchievements } from "@/data/achievements";
 import { cn } from "@/lib/utils";
-
-const achievements = [
-  { id: "first_habit", name: "Primeiro Hábito", icon: "🎯" },
-  { id: "week_streak", name: "7 Dias Seguidos", icon: "🔥" },
-  { id: "water_champion", name: "Campeão da Água", icon: "💧" },
-  { id: "early_bird", name: "Madrugador", icon: "🌅" },
-  { id: "book_lover", name: "Amante dos Livros", icon: "📚" },
-  { id: "fitness_master", name: "Mestre Fitness", icon: "💪" },
-];
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -36,6 +29,29 @@ export default function EditProfile() {
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
   const [selectedAchievements, setSelectedAchievements] = useState<string[]>(user.selectedAchievements);
   const [saving, setSaving] = useState(false);
+  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
+
+  useEffect(() => {
+    loadUnlockedAchievements();
+  }, [user]);
+
+  const loadUnlockedAchievements = async () => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
+
+      const { data } = await supabase
+        .from('user_achievements')
+        .select('achievement_id')
+        .eq('user_id', authUser.id);
+
+      if (data) {
+        setUnlockedAchievements(data.map(a => a.achievement_id));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar conquistas:', error);
+    }
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,6 +86,16 @@ export default function EditProfile() {
   };
 
   const toggleAchievement = (id: string) => {
+    // Só permite selecionar conquistas desbloqueadas
+    if (!unlockedAchievements.includes(id)) {
+      toast({
+        title: "Conquista bloqueada",
+        description: "Você só pode destacar conquistas que já desbloqueou",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSelectedAchievements(prev => {
       if (prev.includes(id)) {
         return prev.filter(a => a !== id);
@@ -192,24 +218,38 @@ export default function EditProfile() {
         <div className="mb-6">
           <Label className="mb-2 block flex items-center gap-2">
             <Trophy className="w-4 h-4" />
-            Conquistas em Destaque (selecione até 3)
+            Conquistas em Destaque (selecione até 3 desbloqueadas)
           </Label>
           <div className="grid grid-cols-2 gap-3">
-            {achievements.map((achievement) => (
-              <button
-                key={achievement.id}
-                onClick={() => toggleAchievement(achievement.id)}
-                className={cn(
-                  "min-h-[44px] p-3 rounded-xl border-2 transition-all active:scale-95",
-                  selectedAchievements.includes(achievement.id)
-                    ? "border-primary bg-primary/10"
-                    : "border-muted bg-card"
-                )}
-              >
-                <div className="text-2xl mb-1">{achievement.icon}</div>
-                <p className="text-xs font-medium">{achievement.name}</p>
-              </button>
-            ))}
+            {allAchievements.map((achievement) => {
+              const isUnlocked = unlockedAchievements.includes(achievement.id);
+              const isSelected = selectedAchievements.includes(achievement.id);
+              
+              return (
+                <button
+                  key={achievement.id}
+                  onClick={() => toggleAchievement(achievement.id)}
+                  disabled={!isUnlocked}
+                  className={cn(
+                    "min-h-[44px] p-3 rounded-xl border-2 transition-all relative",
+                    isUnlocked && "active:scale-95",
+                    isSelected && isUnlocked
+                      ? "border-primary bg-primary/10"
+                      : isUnlocked
+                      ? "border-muted bg-card"
+                      : "border-muted bg-muted/50 cursor-not-allowed opacity-60"
+                  )}
+                >
+                  {!isUnlocked && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
+                      <Lock className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="text-2xl mb-1">{achievement.icon}</div>
+                  <p className="text-xs font-medium">{achievement.name}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
 

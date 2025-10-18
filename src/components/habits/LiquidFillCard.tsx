@@ -9,15 +9,13 @@ interface LiquidFillCardProps {
   onToggleComplete?: (id: string) => void;
   onUpdateProgress?: (id: string, value: number) => void;
   showEditButton?: boolean;
-  showCheckButton?: boolean;
 }
 
 export function LiquidFillCard({ 
   habit, 
   onToggleComplete, 
   onUpdateProgress,
-  showEditButton = false,
-  showCheckButton = false 
+  showEditButton = false
 }: LiquidFillCardProps) {
   const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(false);
@@ -30,7 +28,7 @@ export function LiquidFillCard({
   };
 
   const handleCardClick = () => {
-    if (!habit.is_task && habit.goal_value && habit.current_value !== undefined) {
+    if (habit.goal_value && habit.current_value !== undefined) {
       const newValue = Math.min((habit.current_value || 0) + 1, habit.goal_value);
       onUpdateProgress?.(habit.id, newValue);
     }
@@ -66,40 +64,20 @@ export function LiquidFillCard({
 
       {/* Content */}
       <div className="relative z-10 flex items-center gap-3">
-        {showCheckButton && (
-          <button
-            onClick={handleCheckClick}
-            className={cn(
-              "min-w-[44px] min-h-[44px] w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all active:scale-95",
-              isComplete
-                ? "bg-primary border-primary text-primary-foreground"
-                : "border-muted-foreground/40 active:border-primary"
-            )}
-            aria-label={isComplete ? "Hábito completo" : "Marcar como completo"}
-          >
-            {isComplete && <CheckCircle2 className="w-3 h-3" />}
-          </button>
-        )}
-
         <div
           className={cn(
-            "w-[50px] h-[50px] rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+            "w-[50px] h-[50px] rounded-xl flex items-center justify-center text-2xl flex-shrink-0",
+            habit.color
           )}
-          style={{ backgroundColor: habit.color }}
         >
           {habit.icon}
         </div>
 
         <div className="flex-grow min-w-0">
           <p className="font-semibold text-foreground truncate">{habit.title}</p>
-          {!habit.is_task && (
-            <p className="text-sm text-muted-foreground">
-              {habit.current_value || 0}/{habit.goal_value} {habit.unit || 'unidade'}
-            </p>
-          )}
-          {habit.is_task && (
-            <p className="text-xs text-muted-foreground">Tarefa do dia</p>
-          )}
+          <p className="text-sm text-muted-foreground">
+            {habit.current_value || 0}/{habit.goal_value} {habit.unit || 'unidade'}
+          </p>
         </div>
 
         {showEditButton && (

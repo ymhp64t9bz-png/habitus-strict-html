@@ -37,9 +37,8 @@ const colors = [
 ];
 
 export function ColorPickerModal({ open, onClose, onSelect, currentColor }: ColorPickerModalProps) {
-  const handleSelect = (colorName: string) => {
-    onSelect(colorName);
-    onClose();
+  const handleSelect = (colorClass: string) => {
+    onSelect(colorClass);
   };
 
   return (
@@ -53,17 +52,17 @@ export function ColorPickerModal({ open, onClose, onSelect, currentColor }: Colo
           {colors.map((color) => (
             <button
               key={color.name}
-              onClick={() => handleSelect(color.name)}
+              onClick={() => handleSelect(color.class)}
               className={cn(
                 "relative h-16 rounded-xl transition-all hover:scale-110",
                 color.class,
-                currentColor === color.name && "ring-4 ring-primary ring-offset-2"
+                currentColor === color.class && "ring-4 ring-primary ring-offset-2"
               )}
               title={color.label}
             >
-              {currentColor === color.name && (
+              {currentColor === color.class && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl">✓</span>
+                  <span className="text-2xl text-white drop-shadow-lg">✓</span>
                 </div>
               )}
             </button>

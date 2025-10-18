@@ -20,10 +20,51 @@ export default function Settings() {
   const navigate = useNavigate();
   const { clearAllData } = useHabits();
 
-  const handleClearData = () => {
-    clearAllData();
-    toast.success("Todos os dados foram apagados");
-    navigate("/");
+  const handleClearData = async () => {
+    try {
+      // Limpar todos os dados do usuário e restaurar ao estado inicial
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Apagar todos os hábitos do usuário
+      await supabase
+        .from('habits')
+        .delete()
+        .eq('user_id', user.id);
+
+      // Apagar todas as conquistas
+      await supabase
+        .from('user_achievements')
+        .delete()
+        .eq('user_id', user.id);
+
+      // Resetar o perfil
+      await supabase
+        .from('profiles')
+        .update({
+          streak: 0,
+          total_habits_completed: 0,
+          last_completion_date: null,
+          selected_achievements: []
+        })
+        .eq('user_id', user.id);
+
+      // Criar os 3 hábitos padrão
+      await supabase
+        .from('habits')
+        .insert([
+          { user_id: user.id, title: 'Ler por 21 dias', frequency: 'daily', color: 'gradient-book', icon: '📚', goal_value: 21, current_value: 0, is_task: false, unit: 'dias' },
+          { user_id: user.id, title: 'Caminhar por 21 dias', frequency: 'daily', color: 'gradient-walk', icon: '🚶', goal_value: 21, current_value: 0, is_task: false, unit: 'dias' },
+          { user_id: user.id, title: 'Meditar por 21 dias', frequency: 'daily', color: 'gradient-meditate', icon: '🧘', goal_value: 21, current_value: 0, is_task: false, unit: 'dias' }
+        ]);
+
+      clearAllData();
+      toast.success("Todos os dados foram apagados e restaurados ao padrão");
+      navigate("/");
+    } catch (error) {
+      console.error('Erro ao limpar dados:', error);
+      toast.error("Erro ao limpar dados");
+    }
   };
 
   const handleLogout = async () => {
