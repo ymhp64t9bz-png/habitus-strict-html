@@ -2,14 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { IconPickerModal } from "@/components/habits/IconPickerModal";
 import { ColorPickerModal } from "@/components/habits/ColorPickerModal";
-import { Palette, ChevronRight, Trash2, Plus } from "lucide-react";
-import { HabitType, HabitUnit } from "@/types/habit";
+import { Palette, Trash2 } from "lucide-react";
 import { useHabits } from "@/contexts/HabitsContext";
 import { toast } from "sonner";
 
@@ -19,245 +16,166 @@ export default function EditHabit() {
   const { habits, tasks, updateHabit, deleteHabit, addHabit } = useHabits();
   
   const isNew = id === "new";
-  const habitId = isNew ? 0 : parseInt(id || "0");
-  const existingHabit = isNew ? null : [...habits, ...tasks].find(h => h.id === habitId);
+  const existingHabit = isNew ? null : [...habits, ...tasks].find(h => h.id === id);
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [type, setType] = useState<HabitType>("habit");
-  const [unit, setUnit] = useState<HabitUnit>("pages");
-  const [target, setTarget] = useState("10");
-  const [durationDays, setDurationDays] = useState<string>("30");
+  const [title, setTitle] = useState("");
+  const [goalValue, setGoalValue] = useState("10");
   const [icon, setIcon] = useState("📚");
-  const [iconClass, setIconClass] = useState("book");
+  const [color, setColor] = useState("#8B5CF6");
+  const [isTask, setIsTask] = useState(false);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [targetValue, setTargetValue] = useState("10");
 
   useEffect(() => {
     if (existingHabit) {
-      setName(existingHabit.name);
-      setDescription(existingHabit.description);
-      setType(existingHabit.type);
-      setUnit(existingHabit.unit || "pages");
-      setTarget(existingHabit.target?.toString() || "10");
-      setDurationDays(existingHabit.durationDays?.toString() || "30");
+      setTitle(existingHabit.title);
+      setGoalValue(existingHabit.goal_value?.toString() || "10");
       setIcon(existingHabit.icon);
-      setIconClass(existingHabit.iconClass);
-      setTargetValue(existingHabit.target?.toString() || "10");
+      setColor(existingHabit.color);
+      setIsTask(existingHabit.is_task);
     }
   }, [existingHabit]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const habitData = {
-      id: isNew ? Date.now() : habitId,
-      name,
-      description,
-      type,
-      unit,
-      target: parseInt(targetValue),
-      durationDays: unit === "days" ? parseInt(durationDays) as 7 | 15 | 30 | 60 | 90 | 365 : undefined,
+      title,
+      frequency: 'daily',
+      color,
       icon,
-      iconClass,
-      streak: existingHabit?.streak || 0,
-      progress: existingHabit?.progress || 0,
-      currentValue: existingHabit?.currentValue || 0,
+      goal_value: parseInt(goalValue) || 1,
+      current_value: existingHabit?.current_value || 0,
+      is_complete: existingHabit?.is_complete || false,
+      is_task: isTask,
     };
 
     if (isNew) {
-      addHabit(habitData);
-      toast.success("Hábito criado com sucesso!");
-    } else {
-      updateHabit(habitId, habitData);
-      toast.success("Hábito atualizado com sucesso!");
+      await addHabit(habitData);
+      toast.success(isTask ? "Tarefa criada com sucesso!" : "Hábito criado com sucesso!");
+    } else if (id) {
+      await updateHabit(id, habitData);
+      toast.success(isTask ? "Tarefa atualizada com sucesso!" : "Hábito atualizado com sucesso!");
     }
     navigate("/");
   };
 
-  const handleDelete = () => {
-    if (!isNew) {
-      deleteHabit(habitId);
-      toast.success("Hábito excluído com sucesso!");
+  const handleDelete = async () => {
+    if (!isNew && id) {
+      await deleteHabit(id);
+      toast.success(isTask ? "Tarefa excluída com sucesso!" : "Hábito excluído com sucesso!");
       navigate("/");
     }
   };
 
   return (
     <div className="min-h-screen">
-      <Header title={isNew ? "Novo Hábito" : "Editar Hábito"} showBack onBack={() => navigate("/")} />
+      <Header 
+        title={isNew ? "Novo Hábito" : "Editar Hábito"} 
+        showBack 
+        onBack={() => navigate("/")} 
+      />
 
-      <div className="max-w-[414px] mx-auto p-5">
-        <div className="mb-6">
-          <Label className="mb-2 block">Nome do Hábito</Label>
+      <div className="max-w-[414px] mx-auto p-5 space-y-6">
+        <div>
+          <Label htmlFor="title">Nome do {isTask ? "Tarefa" : "Hábito"}</Label>
           <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="h-[60px] text-base"
-            maxLength={20}
-          />
-          <p className="text-xs text-muted-foreground mt-1 text-right">
-            {name.length}/20
-          </p>
-        </div>
-
-        <div className="mb-6">
-          <Label className="mb-2 block">Descrição</Label>
-          <Textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className="text-base resize-none"
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={isTask ? "Ex: Ligar para o dentista" : "Ex: Ler 10 páginas"}
+            className="mt-2"
           />
         </div>
 
-        <div className="mb-6">
-          <Label className="mb-2 block">Tipo</Label>
-          <Select value={type} onValueChange={(v) => setType(v as HabitType)}>
-            <SelectTrigger className="h-[60px] text-base">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="habit">Hábito</SelectItem>
-              <SelectItem value="task">Tarefa</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="isTask"
+            checked={isTask}
+            onChange={(e) => setIsTask(e.target.checked)}
+            className="w-4 h-4"
+          />
+          <Label htmlFor="isTask">É uma tarefa (única vez)</Label>
         </div>
 
-        {type === "habit" && (
-          <>
-            <div className="mb-6">
-              <Label className="mb-2 block">Unidade de Medida</Label>
-              <Select value={unit} onValueChange={(v) => setUnit(v as HabitUnit)}>
-                <SelectTrigger className="h-[60px] text-base">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="days">Dias</SelectItem>
-                  <SelectItem value="hours">Horas</SelectItem>
-                  <SelectItem value="liters">Litros (L)</SelectItem>
-                  <SelectItem value="pages">Páginas</SelectItem>
-                  <SelectItem value="numeric">Numérico</SelectItem>
-                  <SelectItem value="km">Quilômetros (km)</SelectItem>
-                  <SelectItem value="unidade">Unidade</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {unit === "days" ? (
-              <div className="mb-6">
-                <Label className="mb-2 block">Duração (Dias)</Label>
-                <Select value={durationDays} onValueChange={setDurationDays}>
-                  <SelectTrigger className="h-[60px] text-base">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7">7 dias</SelectItem>
-                    <SelectItem value="15">15 dias</SelectItem>
-                    <SelectItem value="30">30 dias</SelectItem>
-                    <SelectItem value="60">60 dias</SelectItem>
-                    <SelectItem value="90">90 dias</SelectItem>
-                    <SelectItem value="365">365 dias</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ) : (
-              <>
-                <div className="mb-6">
-                  <Label className="mb-2 block">Quantidade Alvo</Label>
-                  <div className="flex gap-3">
-                    <Input
-                      type="number"
-                      value={targetValue}
-                      onChange={(e) => setTargetValue(e.target.value)}
-                      placeholder="Ex.: 4"
-                      className="h-[60px] text-base flex-1"
-                    />
-                    <div className="w-32">
-                      <Select value={unit} onValueChange={(v) => setUnit(v as HabitUnit)}>
-                        <SelectTrigger className="h-[60px] text-base">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="liters">L</SelectItem>
-                          <SelectItem value="km">km</SelectItem>
-                          <SelectItem value="pages">pág</SelectItem>
-                          <SelectItem value="hours">h</SelectItem>
-                          <SelectItem value="unidade">un</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <Label className="mb-2 block">Meta Diária</Label>
-                  <Input
-                    type="number"
-                    value={target}
-                    onChange={(e) => setTarget(e.target.value)}
-                    className="h-[60px] text-base"
-                  />
-                </div>
-              </>
-            )}
-          </>
-        )}
-
-        <div className="mb-6">
-          <h2 className="text-lg font-bold mb-4">Personalizar</h2>
-          <div className="bg-card rounded-2xl overflow-hidden shadow-sm">
-            <button
-              onClick={() => setShowIconPicker(true)}
-              className="w-full flex items-center gap-3 p-4 border-b border-border/50 hover:bg-primary/5 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-2xl">
-                {icon}
-              </div>
-              <span className="flex-grow text-left">Ícone</span>
-              <Plus className="w-5 h-5 text-muted-foreground" />
-            </button>
-            <button 
-              onClick={() => setShowColorPicker(true)}
-              className="w-full flex items-center gap-3 p-4 hover:bg-primary/5 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <Palette className="w-5 h-5" />
-              </div>
-              <span className="flex-grow text-left">Cor</span>
-              <div className={`w-8 h-8 rounded-lg mr-2 gradient-${iconClass}`} />
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </button>
+        {!isTask && (
+          <div>
+            <Label htmlFor="goalValue">Meta</Label>
+            <Input
+              id="goalValue"
+              type="number"
+              value={goalValue}
+              onChange={(e) => setGoalValue(e.target.value)}
+              placeholder="10"
+              className="mt-2"
+            />
           </div>
+        )}
+
+        <div>
+          <Label>Ícone</Label>
+          <button
+            onClick={() => setShowIconPicker(true)}
+            className="mt-2 w-full h-12 bg-card rounded-lg flex items-center justify-between px-4 hover:bg-accent transition-colors"
+          >
+            <span className="text-2xl">{icon}</span>
+            <Palette className="w-5 h-5 text-muted-foreground" />
+          </button>
         </div>
 
-        <Button onClick={handleSave} className="w-full h-[60px] text-base font-bold mb-3">
-          {isNew ? "Criar Hábito" : "Salvar Alterações"}
-        </Button>
-
-        {!isNew && (
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            className="w-full h-[60px] text-base font-bold flex items-center justify-center gap-2"
+        <div>
+          <Label>Cor</Label>
+          <button
+            onClick={() => setShowColorPicker(true)}
+            className="mt-2 w-full h-12 bg-card rounded-lg flex items-center justify-between px-4 hover:bg-accent transition-colors"
           >
-            <Trash2 className="w-5 h-5" />
-            <span>Excluir {type === 'habit' ? 'Hábito' : 'Tarefa'}</span>
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-8 h-8 rounded-lg"
+                style={{ backgroundColor: color }}
+              />
+              <span className="text-sm font-medium">{color}</span>
+            </div>
+            <Palette className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="space-y-3 pt-4">
+          <Button onClick={handleSave} className="w-full" size="lg">
+            {isNew ? "Criar" : "Salvar Alterações"}
           </Button>
-        )}
+
+          {!isNew && (
+            <Button 
+              onClick={handleDelete} 
+              variant="destructive" 
+              className="w-full"
+              size="lg"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir {isTask ? "Tarefa" : "Hábito"}
+            </Button>
+          )}
+        </div>
       </div>
 
       <IconPickerModal
         open={showIconPicker}
         onClose={() => setShowIconPicker(false)}
-        onSelect={setIcon}
+        onSelect={(selectedIcon) => {
+          setIcon(selectedIcon);
+          setShowIconPicker(false);
+        }}
         currentIcon={icon}
       />
 
       <ColorPickerModal
         open={showColorPicker}
         onClose={() => setShowColorPicker(false)}
-        onSelect={setIconClass}
-        currentColor={iconClass}
+        onSelect={(selectedColor) => {
+          setColor(selectedColor);
+          setShowColorPicker(false);
+        }}
+        currentColor={color}
       />
     </div>
   );

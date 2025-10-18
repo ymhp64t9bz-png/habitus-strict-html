@@ -27,6 +27,7 @@ interface HabitsContextType {
   toggleComplete: (id: string) => Promise<void>;
   updateProgress: (id: string, value: number) => Promise<void>;
   refreshHabits: () => Promise<void>;
+  clearAllData: () => Promise<void>;
 }
 
 const HabitsContext = createContext<HabitsContextType | undefined>(undefined);
@@ -114,7 +115,6 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       await loadHabits();
 
-      // Verificar conquista de primeiro hábito
       const { data: habitsCount } = await supabase
         .from('habits')
         .select('id', { count: 'exact' })
@@ -150,7 +150,6 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
-      // Se marcou como completo, registrar conclusão
       if (newCompleteStatus && !habit.is_task) {
         await supabase
           .from('habit_completions')
@@ -160,7 +159,6 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
             value: 1,
           });
 
-        // Atualizar streak e verificar conquistas
         await updateStreakOnCompletion(user.user_id);
       }
 
@@ -212,6 +210,21 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
     await loadHabits();
   };
 
+  const clearAllData = async () => {
+    if (!user?.user_id) return;
+    
+    try {
+      await supabase
+        .from('habits')
+        .delete()
+        .eq('user_id', user.user_id);
+      
+      await loadHabits();
+    } catch (error) {
+      console.error('Error clearing data:', error);
+    }
+  };
+
   return (
     <HabitsContext.Provider
       value={{
@@ -224,6 +237,7 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
         toggleComplete,
         updateProgress,
         refreshHabits,
+        clearAllData,
       }}
     >
       {children}

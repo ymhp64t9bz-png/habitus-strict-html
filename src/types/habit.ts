@@ -1,19 +1,16 @@
-export type HabitType = 'habit' | 'task';
-export type HabitUnit = 'days' | 'hours' | 'liters' | 'pages' | 'numeric' | 'km' | 'unidade';
-
 export interface Habit {
-  id: number;
-  name: string;
-  description: string;
-  streak: number;
-  progress: number;
+  id: string;
+  title: string;
+  frequency: string;
+  color: string;
   icon: string;
-  iconClass: string;
-  type: HabitType;
-  unit?: HabitUnit;
-  target?: number;
-  currentValue?: number;
-  durationDays?: 7 | 15 | 30 | 60 | 90 | 365;
+  goal_value: number;
+  current_value: number;
+  is_complete: boolean;
+  is_task: boolean;
+  user_id: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CommunityPost {

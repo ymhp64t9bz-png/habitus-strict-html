@@ -43,8 +43,8 @@ export default function Home() {
     return null;
   }
 
-  const completedHabits = habits.filter(h => h.progress === 100).length;
-  const progressPercentage = Math.round((completedHabits / habits.length) * 100);
+  const completedHabits = habits.filter(h => h.is_complete).length;
+  const progressPercentage = habits.length > 0 ? Math.round((completedHabits / habits.length) * 100) : 0;
 
   return (
     <>
@@ -82,10 +82,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="bg-card rounded-2xl p-4 my-5 shadow-sm flex items-center justify-between">
+          <section className="bg-card rounded-2xl p-4 my-5 shadow-sm flex items-center justify-between">
           <div>
             <h3 className="text-sm text-primary font-medium mb-1">Streak</h3>
-            <p className="text-xl font-bold">3 dias 🔥</p>
+            <p className="text-xl font-bold">{user.streak} dias 🔥</p>
           </div>
           <Flame className="w-8 h-8 text-red-500" />
         </section>
