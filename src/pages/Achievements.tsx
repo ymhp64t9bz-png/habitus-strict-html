@@ -3,13 +3,53 @@ import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { achievements } from "@/data/habits";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Achievements() {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const [userAchievements, setUserAchievements] = useState<Record<string, any>>({});
 
-  const bronzeAchievements = achievements.filter((a) => a.level === "bronze");
-  const silverAchievements = achievements.filter((a) => a.level === "silver");
-  const goldAchievements = achievements.filter((a) => a.level === "gold");
+  useEffect(() => {
+    if (user?.user_id) {
+      loadUserAchievements();
+    }
+  }, [user?.user_id]);
+
+  const loadUserAchievements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_achievements')
+        .select('*')
+        .eq('user_id', user?.user_id);
+
+      if (error) throw error;
+
+      const achievementsMap = (data || []).reduce((acc, curr) => {
+        acc[curr.achievement_id] = curr;
+        return acc;
+      }, {} as Record<string, any>);
+
+      setUserAchievements(achievementsMap);
+    } catch (error) {
+      console.error('Error loading achievements:', error);
+    }
+  };
+
+  const enrichedAchievements = achievements.map(achievement => {
+    const userAchievement = userAchievements[achievement.id];
+    return {
+      ...achievement,
+      locked: !userAchievement,
+      progress: userAchievement?.progress || 0,
+    };
+  });
+
+  const bronzeAchievements = enrichedAchievements.filter((a) => a.level === "bronze");
+  const silverAchievements = enrichedAchievements.filter((a) => a.level === "silver");
+  const goldAchievements = enrichedAchievements.filter((a) => a.level === "gold");
 
   const AchievementCard = ({ achievement }: { achievement: typeof achievements[0] }) => (
     <div className={cn("bg-card rounded-2xl p-4 mb-4 shadow-sm flex gap-4", achievement.locked && "opacity-60")}>

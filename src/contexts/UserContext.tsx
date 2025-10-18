@@ -4,6 +4,8 @@ import { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/lib/errorHandler';
 
 export interface UserProfile {
+  id: string;
+  user_id: string;
   name: string;
   email: string;
   bio: string;
@@ -11,6 +13,9 @@ export interface UserProfile {
   avatarUrl: string;
   selectedAchievements: string[];
   premium: boolean;
+  streak: number;
+  totalHabitsCompleted: number;
+  lastCompletionDate?: string;
   subscriptionStatus?: {
     subscribed: boolean;
     inTrial: boolean;
@@ -117,6 +122,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       if (data) {
         setUser({
+          id: data.id,
+          user_id: data.user_id,
           name: data.name,
           email: data.email,
           bio: data.bio || '',
@@ -124,6 +131,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
           avatarUrl: data.avatar_url,
           selectedAchievements: data.selected_achievements || [],
           premium: data.premium || false,
+          streak: data.streak || 0,
+          totalHabitsCompleted: data.total_habits_completed || 0,
+          lastCompletionDate: data.last_completion_date,
         });
         
         // Verifica assinatura após carregar perfil

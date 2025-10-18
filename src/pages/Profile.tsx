@@ -3,10 +3,12 @@ import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Edit2, Trophy, Target, Calendar } from "lucide-react";
+import { Edit2, Trophy } from "lucide-react";
 import { LiquidFillCard } from "@/components/habits/LiquidFillCard";
 import { useHabits } from "@/contexts/HabitsContext";
 import { useUser } from "@/contexts/UserContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 const achievementData: Record<string, { name: string; icon: string }> = {
   first_habit: { name: "Primeiro Hábito", icon: "🎯" },
@@ -19,12 +21,38 @@ const achievementData: Record<string, { name: string; icon: string }> = {
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { habits } = useHabits();
+  const { habits: allHabits } = useHabits();
   const { user, loading } = useUser();
+  const [unlockedAchievements, setUnlockedAchievements] = useState<any[]>([]);
+  
+  const habits = allHabits.filter(h => !h.is_task);
+  const activeHabitsCount = habits.length;
+
+  useEffect(() => {
+    if (user?.user_id) {
+      loadUnlockedAchievements();
+    }
+  }, [user?.user_id]);
+
+  const loadUnlockedAchievements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_achievements')
+        .select('achievement_id')
+        .eq('user_id', user?.user_id);
+
+      if (error) throw error;
+      setUnlockedAchievements(data || []);
+    } catch (error) {
+      console.error('Error loading achievements:', error);
+    }
+  };
 
   if (loading || !user) {
     return null;
   }
+
+  const unlockedCount = unlockedAchievements.length;
 
   return (
     <div className="min-h-screen pb-24">
@@ -57,15 +85,15 @@ export default function Profile() {
 
         <div className="grid grid-cols-3 gap-4 my-5">
           <div className="bg-card rounded-2xl p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold mb-1">15</p>
+            <p className="text-2xl font-bold mb-1">{unlockedCount}</p>
             <p className="text-sm text-muted-foreground">Conquistas</p>
           </div>
           <div className="bg-card rounded-2xl p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold mb-1">5</p>
+            <p className="text-2xl font-bold mb-1">{activeHabitsCount}</p>
             <p className="text-sm text-muted-foreground">Hábitos</p>
           </div>
           <div className="bg-card rounded-2xl p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold mb-1">120</p>
+            <p className="text-2xl font-bold mb-1">{user.streak}</p>
             <p className="text-sm text-muted-foreground">Dias</p>
           </div>
         </div>

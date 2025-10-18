@@ -98,11 +98,14 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          last_completion_date: string | null
           name: string
           premium: boolean | null
           profession: string | null
           provider: string | null
           selected_achievements: string[] | null
+          streak: number | null
+          total_habits_completed: number | null
           updated_at: string
           user_id: string
         }
@@ -112,11 +115,14 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          last_completion_date?: string | null
           name: string
           premium?: boolean | null
           profession?: string | null
           provider?: string | null
           selected_achievements?: string[] | null
+          streak?: number | null
+          total_habits_completed?: number | null
           updated_at?: string
           user_id: string
         }
@@ -126,12 +132,39 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          last_completion_date?: string | null
           name?: string
           premium?: boolean | null
           profession?: string | null
           provider?: string | null
           selected_achievements?: string[] | null
+          streak?: number | null
+          total_habits_completed?: number | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          progress: number | null
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          progress?: number | null
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          progress?: number | null
+          unlocked_at?: string
           user_id?: string
         }
         Relationships: []

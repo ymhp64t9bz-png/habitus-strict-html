@@ -8,9 +8,9 @@ import { useHabits } from "@/contexts/HabitsContext";
 export default function Progress() {
   const navigate = useNavigate();
   const { habits: allHabits } = useHabits();
-  const habits = allHabits.filter(h => h.type === 'habit');
+  const habits = allHabits.filter(h => !h.is_task);
   
-  const completedHabits = habits.filter(h => h.progress === 100).length;
+  const completedHabits = habits.filter(h => h.is_complete).length;
   const totalProgress = Math.round((completedHabits / habits.length) * 100);
 
   return (

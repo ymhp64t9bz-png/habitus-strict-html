@@ -6,8 +6,8 @@ import { useNavigate } from "react-router-dom";
 
 interface LiquidFillCardProps {
   habit: Habit;
-  onToggleComplete?: (id: number) => void;
-  onUpdateProgress?: (id: number, value: number) => void;
+  onToggleComplete?: (id: string) => void;
+  onUpdateProgress?: (id: string, value: number) => void;
   showEditButton?: boolean;
   showCheckButton?: boolean;
 }
@@ -30,8 +30,8 @@ export function LiquidFillCard({
   };
 
   const handleCardClick = () => {
-    if (habit.type === 'habit' && habit.target && habit.currentValue !== undefined) {
-      const newValue = Math.min((habit.currentValue || 0) + 1, habit.target);
+    if (!habit.is_task && habit.goal_value && habit.current_value !== undefined) {
+      const newValue = Math.min((habit.current_value || 0) + 1, habit.goal_value);
       onUpdateProgress?.(habit.id, newValue);
     }
   };
@@ -41,7 +41,10 @@ export function LiquidFillCard({
     navigate(`/edit-habit/${habit.id}`);
   };
 
-  const isComplete = habit.progress === 100;
+  const progress = habit.goal_value > 0 
+    ? Math.round((habit.current_value / habit.goal_value) * 100) 
+    : 0;
+  const isComplete = habit.is_complete;
 
   return (
     <div
@@ -52,12 +55,12 @@ export function LiquidFillCard({
       <div
         className={cn(
           "absolute inset-y-0 left-0 transition-all duration-[600ms] ease-out",
-          isComplete && isAnimating && "animate-glow",
-          `gradient-${habit.iconClass}`
+          isComplete && isAnimating && "animate-glow"
         )}
         style={{
-          width: `${habit.progress}%`,
+          width: `${progress}%`,
           opacity: 0.15,
+          backgroundColor: habit.color,
         }}
       />
 
@@ -80,21 +83,21 @@ export function LiquidFillCard({
 
         <div
           className={cn(
-            "w-[50px] h-[50px] rounded-xl flex items-center justify-center text-2xl flex-shrink-0",
-            `gradient-${habit.iconClass}`
+            "w-[50px] h-[50px] rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
           )}
+          style={{ backgroundColor: habit.color }}
         >
           {habit.icon}
         </div>
 
         <div className="flex-grow min-w-0">
-          <p className="font-semibold text-foreground truncate">{habit.name}</p>
-          {habit.type === 'habit' && habit.unit && (
+          <p className="font-semibold text-foreground truncate">{habit.title}</p>
+          {!habit.is_task && (
             <p className="text-sm text-muted-foreground">
-              {habit.currentValue || 0}/{habit.target} {getUnitLabel(habit.unit)}
+              {habit.current_value || 0}/{habit.goal_value}
             </p>
           )}
-          {habit.type === 'task' && (
+          {habit.is_task && (
             <p className="text-xs text-muted-foreground">Tarefa do dia</p>
           )}
         </div>
@@ -111,17 +114,4 @@ export function LiquidFillCard({
       </div>
     </div>
   );
-}
-
-function getUnitLabel(unit: string): string {
-  const labels: Record<string, string> = {
-    days: 'dias',
-    hours: 'h',
-    liters: 'L',
-    pages: 'pág',
-    numeric: '',
-    km: 'km',
-    unidade: '',
-  };
-  return labels[unit] || '';
 }

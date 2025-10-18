@@ -1,81 +1,215 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { Habit } from "@/types/habit";
-import { initialHabits, initialTasks } from "@/data/habits";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "./UserContext";
+import { updateStreakOnCompletion, checkStreakIntegrity } from "@/lib/streakManager";
+import { checkAndUnlockAchievements } from "@/lib/achievementsManager";
+
+interface Habit {
+  id: string;
+  title: string;
+  frequency: string;
+  color: string;
+  icon: string;
+  goal_value: number;
+  current_value: number;
+  is_complete: boolean;
+  is_task: boolean;
+  user_id: string;
+}
 
 interface HabitsContextType {
   habits: Habit[];
   tasks: Habit[];
-  updateHabit: (id: number, updates: Partial<Habit>) => void;
-  deleteHabit: (id: number) => void;
-  addHabit: (habit: Habit) => void;
-  toggleComplete: (id: number) => void;
-  updateProgress: (id: number, value: number) => void;
-  clearAllData: () => void;
+  loading: boolean;
+  updateHabit: (id: string, updates: Partial<Habit>) => Promise<void>;
+  deleteHabit: (id: string) => Promise<void>;
+  addHabit: (habit: Omit<Habit, 'id' | 'user_id'>) => Promise<void>;
+  toggleComplete: (id: string) => Promise<void>;
+  updateProgress: (id: string, value: number) => Promise<void>;
+  refreshHabits: () => Promise<void>;
 }
 
 const HabitsContext = createContext<HabitsContextType | undefined>(undefined);
 
 export function HabitsProvider({ children }: { children: ReactNode }) {
-  const [habits, setHabits] = useState<Habit[]>(() => {
-    const stored = localStorage.getItem("habitus_habits");
-    return stored ? JSON.parse(stored) : initialHabits;
-  });
-
-  const [tasks, setTasks] = useState<Habit[]>(() => {
-    const stored = localStorage.getItem("habitus_tasks");
-    return stored ? JSON.parse(stored) : initialTasks;
-  });
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [tasks, setTasks] = useState<Habit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useUser();
 
   useEffect(() => {
-    localStorage.setItem("habitus_habits", JSON.stringify(habits));
-  }, [habits]);
+    if (user?.user_id) {
+      loadHabits();
+      checkStreakIntegrity(user.user_id);
+    }
+  }, [user?.user_id]);
 
-  useEffect(() => {
-    localStorage.setItem("habitus_tasks", JSON.stringify(tasks));
-  }, [tasks]);
+  const loadHabits = async () => {
+    if (!user?.user_id) return;
 
-  const updateHabit = (id: number, updates: Partial<Habit>) => {
-    setHabits(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-  };
+    try {
+      const { data, error } = await supabase
+        .from('habits')
+        .select('*')
+        .eq('user_id', user.user_id)
+        .order('created_at', { ascending: true });
 
-  const deleteHabit = (id: number) => {
-    setHabits(prev => prev.filter(h => h.id !== id));
-    setTasks(prev => prev.filter(t => t.id !== id));
-  };
+      if (error) throw error;
 
-  const addHabit = (habit: Habit) => {
-    if (habit.type === "habit") {
-      setHabits(prev => [...prev, habit]);
-    } else {
-      setTasks(prev => [...prev, habit]);
+      const allHabits = data || [];
+      setHabits(allHabits.filter(h => !h.is_task));
+      setTasks(allHabits.filter(h => h.is_task));
+    } catch (error) {
+      console.error('Error loading habits:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const toggleComplete = (id: number) => {
-    setHabits(prev => prev.map(h =>
-      h.id === id ? { ...h, progress: h.progress === 100 ? 0 : 100 } : h
-    ));
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, progress: t.progress === 100 ? 0 : 100 } : t
-    ));
+  const updateHabit = async (id: string, updates: Partial<Habit>) => {
+    if (!user?.user_id) return;
+
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', user.user_id);
+
+      if (error) throw error;
+      await loadHabits();
+    } catch (error) {
+      console.error('Error updating habit:', error);
+    }
   };
 
-  const updateProgress = (id: number, value: number) => {
-    setHabits(prev => prev.map(h => {
-      if (h.id === id && h.target) {
-        const progress = Math.round((value / h.target) * 100);
-        return { ...h, currentValue: value, progress };
+  const deleteHabit = async (id: string) => {
+    if (!user?.user_id) return;
+
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.user_id);
+
+      if (error) throw error;
+      await loadHabits();
+    } catch (error) {
+      console.error('Error deleting habit:', error);
+    }
+  };
+
+  const addHabit = async (habit: Omit<Habit, 'id' | 'user_id'>) => {
+    if (!user?.user_id) return;
+
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .insert({
+          ...habit,
+          user_id: user.user_id,
+        });
+
+      if (error) throw error;
+      await loadHabits();
+
+      // Verificar conquista de primeiro hábito
+      const { data: habitsCount } = await supabase
+        .from('habits')
+        .select('id', { count: 'exact' })
+        .eq('user_id', user.user_id)
+        .eq('is_task', false);
+
+      if (habitsCount && habitsCount.length === 1) {
+        await checkAndUnlockAchievements(user.user_id, {
+          streak: user.streak,
+          totalHabitsCompleted: user.totalHabitsCompleted,
+          habitsCount: 1,
+        });
       }
-      return h;
-    }));
+    } catch (error) {
+      console.error('Error adding habit:', error);
+    }
   };
 
-  const clearAllData = () => {
-    setHabits([]);
-    setTasks([]);
-    localStorage.removeItem("habitus_habits");
-    localStorage.removeItem("habitus_tasks");
+  const toggleComplete = async (id: string) => {
+    if (!user?.user_id) return;
+
+    try {
+      const habit = [...habits, ...tasks].find(h => h.id === id);
+      if (!habit) return;
+
+      const newCompleteStatus = !habit.is_complete;
+
+      const { error } = await supabase
+        .from('habits')
+        .update({ is_complete: newCompleteStatus })
+        .eq('id', id)
+        .eq('user_id', user.user_id);
+
+      if (error) throw error;
+
+      // Se marcou como completo, registrar conclusão
+      if (newCompleteStatus && !habit.is_task) {
+        await supabase
+          .from('habit_completions')
+          .insert({
+            habit_id: id,
+            user_id: user.user_id,
+            value: 1,
+          });
+
+        // Atualizar streak e verificar conquistas
+        await updateStreakOnCompletion(user.user_id);
+      }
+
+      await loadHabits();
+    } catch (error) {
+      console.error('Error toggling complete:', error);
+    }
+  };
+
+  const updateProgress = async (id: string, value: number) => {
+    if (!user?.user_id) return;
+
+    try {
+      const habit = habits.find(h => h.id === id);
+      if (!habit) return;
+
+      const isComplete = value >= habit.goal_value;
+
+      const { error } = await supabase
+        .from('habits')
+        .update({
+          current_value: value,
+          is_complete: isComplete,
+        })
+        .eq('id', id)
+        .eq('user_id', user.user_id);
+
+      if (error) throw error;
+
+      if (isComplete) {
+        await supabase
+          .from('habit_completions')
+          .insert({
+            habit_id: id,
+            user_id: user.user_id,
+            value: value,
+          });
+
+        await updateStreakOnCompletion(user.user_id);
+      }
+
+      await loadHabits();
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  };
+
+  const refreshHabits = async () => {
+    await loadHabits();
   };
 
   return (
@@ -83,12 +217,13 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
       value={{
         habits,
         tasks,
+        loading,
         updateHabit,
         deleteHabit,
         addHabit,
         toggleComplete,
         updateProgress,
-        clearAllData,
+        refreshHabits,
       }}
     >
       {children}
