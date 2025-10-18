@@ -10,8 +10,10 @@ export default function Progress() {
   const { habits: allHabits } = useHabits();
   const habits = allHabits.filter(h => !h.is_task);
   
-  const completedHabits = habits.filter(h => h.is_complete).length;
-  const totalProgress = Math.round((completedHabits / habits.length) * 100);
+  // Calcular progresso baseado nos dias cumpridos vs total de dias
+  const totalDays = habits.reduce((sum, h) => sum + h.goal_value, 0);
+  const completedDays = habits.reduce((sum, h) => sum + h.current_value, 0);
+  const totalProgress = totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
 
   return (
     <div className="min-h-screen pb-24">
