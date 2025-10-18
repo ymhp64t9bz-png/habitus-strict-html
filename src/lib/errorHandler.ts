@@ -14,6 +14,9 @@ export function sanitizeAuthError(error: any): string {
     'Password should be at least': 'A senha deve ter pelo menos 6 caracteres',
     'User not found': 'Usuário não encontrado',
     'Email rate limit exceeded': 'Muitas tentativas. Aguarde alguns minutos.',
+    'For security purposes': 'Por favor, verifique seu email para redefinir a senha.',
+    'New password should be different': 'A nova senha deve ser diferente da anterior',
+    'Same password': 'A nova senha deve ser diferente da anterior',
   };
   
   // Check for known error patterns

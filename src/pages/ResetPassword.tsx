@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeAuthError, logError } from "@/lib/errorHandler";
 import { z } from "zod";
 
 const resetSchema = z.object({
@@ -32,9 +33,10 @@ export default function ResetPassword() {
       });
 
       if (error) {
+        logError('Reset Password', error);
         toast({
           title: "Erro ao enviar email",
-          description: error.message,
+          description: sanitizeAuthError(error),
           variant: "destructive",
         });
         return;

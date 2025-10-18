@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { sanitizeAuthError, logError } from "@/lib/errorHandler";
 
 const updatePasswordSchema = z.object({
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
@@ -52,9 +53,10 @@ export default function UpdatePassword() {
       });
 
       if (error) {
+        logError('Update Password', error);
         toast({
           title: "Erro ao atualizar senha",
-          description: error.message,
+          description: sanitizeAuthError(error),
           variant: "destructive",
         });
         return;

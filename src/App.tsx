@@ -38,6 +38,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const queryClient = new QueryClient();
 
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { session, loading } = useUser();
+  
+  if (loading) {
+    return <Splash />;
+  }
+  
+  if (session) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -46,9 +60,9 @@ const App = () => (
       <div className="w-full max-w-[414px] mx-auto min-h-screen bg-background shadow-2xl overflow-x-hidden">
         <Routes>
           <Route path="/splash" element={<Splash />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+          <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
           <Route path="/update-password" element={<UpdatePassword />} />
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />

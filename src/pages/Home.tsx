@@ -8,6 +8,7 @@ import { useUser } from "@/contexts/UserContext";
 import { Flame, Swords, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SubscriptionModal } from "@/components/subscription/SubscriptionModal";
+import { SubscriptionStatus } from "@/components/subscription/SubscriptionStatus";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -56,6 +57,8 @@ export default function Home() {
         <Header title="Início" showSettings showThemeToggle />
 
       <div className="max-w-[414px] mx-auto p-5">
+        <SubscriptionStatus subscriptionStatus={user?.subscriptionStatus} />
+        
         <section className="gradient-primary text-white rounded-2xl p-5 my-5 text-center shadow-lg shadow-primary/20 relative">
           <button
             onClick={() => navigate("/challenges")}

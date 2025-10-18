@@ -52,38 +52,54 @@ export default function Subscription() {
     }
   };
 
-  const plans = [
+  const plans: Array<{
+    name: string;
+    price: string;
+    period: string;
+    originalPrice?: string;
+    features: string[];
+    savings: string | null;
+    highlight?: boolean;
+  }> = [
     {
       name: "Mensal",
       price: "R$ 14,90",
       period: "/mês",
       features: [
+        "3 dias grátis para testar",
         "Acesso a todos os recursos premium",
         "Relatórios de progresso avançados",
+        "Suporte por email",
       ],
       savings: null,
     },
     {
       name: "Trimestral",
-      price: "R$ 36,90",
+      price: "R$ 40,17",
       period: "/trimestre",
+      originalPrice: "R$ 44,70",
       features: [
+        "3 dias grátis para testar",
         "Acesso a todos os recursos premium",
         "Relatórios de progresso avançados",
         "Suporte prioritário",
+        "Economize R$ 4,53",
       ],
-      savings: "Economize 17%",
+      savings: "Economize 10%",
       highlight: true,
     },
     {
       name: "Anual",
-      price: "R$ 124,90",
+      price: "R$ 125,16",
       period: "/ano",
+      originalPrice: "R$ 178,80",
       features: [
+        "3 dias grátis para testar",
         "Acesso a todos os recursos premium",
         "Relatórios de progresso avançados",
         "Suporte prioritário",
         "Acesso antecipado a novidades",
+        "Economize R$ 53,64",
       ],
       savings: "Economize 30%",
     },
@@ -96,9 +112,9 @@ export default function Subscription() {
       <div className="max-w-[414px] mx-auto p-5">
         <div className="gradient-primary text-white rounded-2xl p-8 mb-6 text-center">
           <h1 className="text-3xl font-bold mb-2">Habitus Premium</h1>
-          <p className="text-lg mb-4">Desbloqueie seu potencial máximo com o Habitus Premium</p>
+          <p className="text-lg mb-4">Desbloqueie seu potencial máximo</p>
           <p className="text-sm opacity-90">
-            Comece seu teste gratuito de 7 dias. O pagamento será cobrado apenas após o término do período de avaliação através da sua conta App Store/Play Store.
+            Comece seus <strong>3 dias grátis</strong>. Cancele a qualquer momento antes dos 3 dias.
           </p>
         </div>
 
@@ -121,7 +137,12 @@ export default function Subscription() {
               <div className="mb-4">
                 <h3 className="text-lg font-bold mb-1">{plan.name}</h3>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">{plan.price}</span>
+                  {plan.originalPrice && (
+                    <span className="text-sm text-muted-foreground line-through mr-1">
+                      {plan.originalPrice}
+                    </span>
+                  )}
+                  <span className="text-3xl font-bold text-primary">{plan.price}</span>
                   <span className="text-sm text-muted-foreground">{plan.period}</span>
                 </div>
               </div>
@@ -151,9 +172,9 @@ export default function Subscription() {
                     Processando...
                   </>
                 ) : user?.premium ? (
-                  "Plano Atual"
+                  "Plano Ativo"
                 ) : (
-                  "Assinar"
+                  "Começar meus 3 dias grátis"
                 )}
               </Button>
             </Card>
