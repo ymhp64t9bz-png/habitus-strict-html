@@ -64,7 +64,13 @@ export async function updateStreakOnCompletion(userId: string) {
 
     if (updateError) throw updateError;
 
-    // Verificar conquistas
+    // Buscar dados atualizados do perfil para verificar conquistas
+    const { data: updatedProfile } = await supabase
+      .from('profiles')
+      .select('streak, total_habits_completed')
+      .eq('user_id', userId)
+      .single();
+
     const { data: habitsCount } = await supabase
       .from('habits')
       .select('id', { count: 'exact' })
@@ -72,8 +78,8 @@ export async function updateStreakOnCompletion(userId: string) {
       .eq('is_task', false);
 
     await checkAndUnlockAchievements(userId, {
-      streak: newStreak,
-      totalHabitsCompleted: (profile?.total_habits_completed || 0) + 1,
+      streak: updatedProfile?.streak || 0,
+      totalHabitsCompleted: updatedProfile?.total_habits_completed || 0,
       habitsCount: habitsCount?.length || 0,
     });
 

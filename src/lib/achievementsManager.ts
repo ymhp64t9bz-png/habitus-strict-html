@@ -69,31 +69,43 @@ export async function checkAndUnlockAchievements(userId: string, data: {
   habitsCount: number;
 }) {
   try {
+    console.log('🏆 Verificando conquistas:', data);
+    
     // Buscar conquistas já desbloqueadas
     const { data: existing, error: fetchError } = await supabase
       .from('user_achievements')
       .select('achievement_id')
       .eq('user_id', userId);
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error('Erro ao buscar conquistas:', fetchError);
+      throw fetchError;
+    }
 
     const unlockedIds = new Set((existing || []).map(a => a.achievement_id));
+    console.log('🔓 Conquistas já desbloqueadas:', Array.from(unlockedIds));
 
     // Verificar cada conquista - só desbloquear quando 100% completa
     for (const achievement of achievementChecks) {
       const shouldUnlock = achievement.check(data);
 
       if (shouldUnlock && !unlockedIds.has(achievement.id)) {
-        // Desbloquear conquista SOMENTE quando criterio for 100% atendido
-        await supabase
+        console.log('✨ Desbloqueando conquista:', achievement.id);
+        
+        const { error: insertError } = await supabase
           .from('user_achievements')
           .insert({
             user_id: userId,
             achievement_id: achievement.id,
             progress: 100,
           });
+
+        if (insertError) {
+          console.error('❌ Erro ao desbloquear conquista:', achievement.id, insertError);
+        } else {
+          console.log('✅ Conquista desbloqueada com sucesso:', achievement.id);
+        }
       }
-      // Não armazenar progresso parcial - conquista só aparece quando 100% completa
     }
   } catch (error) {
     console.error('Error checking achievements:', error);
