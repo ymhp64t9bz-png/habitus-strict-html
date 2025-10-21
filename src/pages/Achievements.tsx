@@ -48,12 +48,9 @@ export default function Achievements() {
     };
   });
 
-  // Só mostrar conquistas 100% completas
-  const completedAchievements = enrichedAchievements.filter((a) => !a.locked);
-
-  const bronzeAchievements = completedAchievements.filter((a) => a.level === "bronze");
-  const silverAchievements = completedAchievements.filter((a) => a.level === "silver");
-  const goldAchievements = completedAchievements.filter((a) => a.level === "gold");
+  const bronzeAchievements = enrichedAchievements.filter((a) => a.level === "bronze");
+  const silverAchievements = enrichedAchievements.filter((a) => a.level === "silver");
+  const goldAchievements = enrichedAchievements.filter((a) => a.level === "gold");
 
   const AchievementCard = ({ achievement }: { achievement: typeof achievements[0] }) => (
     <div className="bg-card rounded-2xl p-4 mb-4 shadow-sm flex gap-4">
