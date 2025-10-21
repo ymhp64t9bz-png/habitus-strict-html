@@ -123,7 +123,7 @@ export function SubscriptionModal({ open, onSubscriptionComplete }: Subscription
   return (
     <Dialog open={open}>
       <DialogContent 
-        className="max-w-md max-h-[90vh] overflow-y-auto"
+        className="max-w-md max-h-[90vh] overflow-y-auto [&>button]:hidden"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
