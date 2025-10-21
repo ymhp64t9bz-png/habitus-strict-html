@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import habitusLogo from "@/assets/habitus-logo.png";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -136,11 +136,9 @@ export default function Login() {
   return (
     <div className="flex flex-col justify-center min-h-screen p-5">
       <div className="text-center mb-10">
-        <img 
-          src={habitusLogo} 
-          alt="Habitus Logo" 
-          className="w-20 h-20 mx-auto mb-5"
-        />
+        <div className="w-20 h-20 mx-auto mb-5 bg-primary/10 rounded-full flex items-center justify-center">
+          <CheckCircle className="w-10 h-10 text-primary" />
+        </div>
         <h1 className="text-4xl font-bold mb-2">Habitus</h1>
         <p className="text-muted-foreground">Construindo hábitos com propósito</p>
       </div>
