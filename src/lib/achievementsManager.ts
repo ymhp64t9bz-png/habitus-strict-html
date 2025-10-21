@@ -79,13 +79,12 @@ export async function checkAndUnlockAchievements(userId: string, data: {
 
     const unlockedIds = new Set((existing || []).map(a => a.achievement_id));
 
-    // Verificar cada conquista
+    // Verificar cada conquista - só desbloquear quando 100% completa
     for (const achievement of achievementChecks) {
       const shouldUnlock = achievement.check(data);
-      const progress = achievement.progress ? achievement.progress(data) : (shouldUnlock ? 100 : 0);
 
       if (shouldUnlock && !unlockedIds.has(achievement.id)) {
-        // Desbloquear conquista
+        // Desbloquear conquista SOMENTE quando criterio for 100% atendido
         await supabase
           .from('user_achievements')
           .insert({
@@ -93,25 +92,8 @@ export async function checkAndUnlockAchievements(userId: string, data: {
             achievement_id: achievement.id,
             progress: 100,
           });
-      } else if (!shouldUnlock && unlockedIds.has(achievement.id)) {
-        // Atualizar progresso de conquista já desbloqueada
-        await supabase
-          .from('user_achievements')
-          .update({ progress })
-          .eq('user_id', userId)
-          .eq('achievement_id', achievement.id);
-      } else if (!unlockedIds.has(achievement.id) && progress > 0) {
-        // Inserir progresso de conquista ainda não desbloqueada
-        await supabase
-          .from('user_achievements')
-          .upsert({
-            user_id: userId,
-            achievement_id: achievement.id,
-            progress,
-          }, {
-            onConflict: 'user_id,achievement_id'
-          });
       }
+      // Não armazenar progresso parcial - conquista só aparece quando 100% completa
     }
   } catch (error) {
     console.error('Error checking achievements:', error);

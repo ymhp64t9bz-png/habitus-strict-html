@@ -15,7 +15,8 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
 
   try {
@@ -55,13 +56,23 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil" 
     });
 
+    // Verificar se o usuário já usou o trial
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('trial_used')
+      .eq('user_id', user.id)
+      .single();
+
+    const hasUsedTrial = profile?.trial_used || false;
+
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
     }
 
-    const session = await stripe.checkout.sessions.create({
+    // Configurar session com ou sem trial baseado em trial_used
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -71,18 +82,24 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      subscription_data: {
+      success_url: `${origin}/`,
+      cancel_url: `${origin}/`,
+    };
+
+    // Só adicionar trial se o usuário NUNCA usou antes
+    if (!hasUsedTrial) {
+      sessionConfig.subscription_data = {
         trial_period_days: 3,
         trial_settings: {
           end_behavior: {
             missing_payment_method: 'cancel',
           },
         },
-      },
-      payment_method_collection: 'if_required',
-      success_url: `${origin}/`,
-      cancel_url: `${origin}/`,
-    });
+      };
+      sessionConfig.payment_method_collection = 'if_required';
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

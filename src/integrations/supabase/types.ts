@@ -115,6 +115,8 @@ export type Database = {
           selected_achievements: string[] | null
           streak: number | null
           total_habits_completed: number | null
+          trial_cancelled_at: string | null
+          trial_used: boolean | null
           updated_at: string
           user_id: string
         }
@@ -132,6 +134,8 @@ export type Database = {
           selected_achievements?: string[] | null
           streak?: number | null
           total_habits_completed?: number | null
+          trial_cancelled_at?: string | null
+          trial_used?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -149,6 +153,8 @@ export type Database = {
           selected_achievements?: string[] | null
           streak?: number | null
           total_habits_completed?: number | null
+          trial_cancelled_at?: string | null
+          trial_used?: boolean | null
           updated_at?: string
           user_id?: string
         }

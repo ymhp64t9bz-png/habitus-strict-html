@@ -105,26 +105,53 @@ serve(async (req) => {
           subscriptionId: activeOrTrialSub.id,
           trialEnd 
         });
+        
+        // Marcar que o usuário está usando o trial
+        await supabaseClient
+          .from('profiles')
+          .update({ 
+            premium: true,
+            trial_used: true 
+          })
+          .eq('user_id', user.id);
       } else {
         logStep("Active subscription found", { 
           subscriptionId: activeOrTrialSub.id 
         });
+        
+        await supabaseClient
+          .from('profiles')
+          .update({ premium: true })
+          .eq('user_id', user.id);
       }
       
       productId = activeOrTrialSub.items.data[0].price.product;
       logStep("Determined subscription tier", { productId });
-      
-      await supabaseClient
-        .from('profiles')
-        .update({ premium: hasActiveSub || inTrial })
-        .eq('user_id', user.id);
     } else {
       logStep("No active or trial subscription found");
       
-      await supabaseClient
-        .from('profiles')
-        .update({ premium: false })
-        .eq('user_id', user.id);
+      // Verificar se houve cancelamento recente
+      const cancelledSubs = subscriptions.data.filter(
+        (sub: any) => sub.status === "canceled" && sub.canceled_at
+      );
+      
+      if (cancelledSubs.length > 0) {
+        const mostRecentCancellation = cancelledSubs[0];
+        const cancelledAt = new Date(mostRecentCancellation.canceled_at * 1000).toISOString();
+        
+        await supabaseClient
+          .from('profiles')
+          .update({ 
+            premium: false,
+            trial_cancelled_at: cancelledAt
+          })
+          .eq('user_id', user.id);
+      } else {
+        await supabaseClient
+          .from('profiles')
+          .update({ premium: false })
+          .eq('user_id', user.id);
+      }
     }
 
     return new Response(JSON.stringify({

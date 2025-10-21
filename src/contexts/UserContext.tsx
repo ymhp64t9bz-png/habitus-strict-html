@@ -16,6 +16,8 @@ export interface UserProfile {
   streak: number;
   totalHabitsCompleted: number;
   lastCompletionDate?: string;
+  trialUsed: boolean;
+  trialCancelledAt?: string;
   subscriptionStatus?: {
     subscribed: boolean;
     inTrial: boolean;
@@ -134,6 +136,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
           streak: data.streak || 0,
           totalHabitsCompleted: data.total_habits_completed || 0,
           lastCompletionDate: data.last_completion_date,
+          trialUsed: data.trial_used || false,
+          trialCancelledAt: data.trial_cancelled_at,
         });
         
         // Verifica assinatura após carregar perfil

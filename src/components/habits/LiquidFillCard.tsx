@@ -71,16 +71,20 @@ export function LiquidFillCard({
     >
       {/* Liquid fill background - left to right */}
       <div
-        className={cn(
-          "absolute inset-y-0 left-0 transition-all duration-[600ms] ease-out",
-          isComplete && isAnimating && "animate-glow"
-        )}
-        style={{
-          width: `${progress}%`,
-          opacity: 0.15,
-          backgroundColor: habit.color,
-        }}
-      />
+        className="absolute inset-y-0 left-0 transition-all duration-[600ms] ease-out rounded-2xl overflow-hidden"
+      >
+        <div
+          className={cn(
+            "h-full transition-all duration-500",
+            isComplete && isAnimating && "animate-glow"
+          )}
+          style={{
+            width: `${progress}%`,
+            backgroundColor: habit.color,
+            opacity: 0.15,
+          }}
+        />
+      </div>
 
       {/* Content */}
       <div className="relative z-10 flex items-center gap-3">

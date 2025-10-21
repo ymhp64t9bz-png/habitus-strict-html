@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/contexts/UserContext";
 import { toast } from "sonner";
 
 interface SubscriptionModalProps {
@@ -15,6 +16,15 @@ interface SubscriptionModalProps {
 export function SubscriptionModal({ open, onSubscriptionComplete }: SubscriptionModalProps) {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const { user } = useUser();
+  const [showTrialMessage, setShowTrialMessage] = useState(true);
+
+  useEffect(() => {
+    // Se o usuário já usou o trial, não mostrar mensagem de trial grátis
+    if (user?.trialUsed) {
+      setShowTrialMessage(false);
+    }
+  }, [user]);
 
   const plans = [
     {
@@ -24,7 +34,7 @@ export function SubscriptionModal({ open, onSubscriptionComplete }: Subscription
       period: "/mês",
       priceId: "price_monthly_1490",
       features: [
-        "3 dias grátis para testar",
+        ...(showTrialMessage ? ["3 dias grátis para testar"] : []),
         "Acesso a todos os recursos premium",
         "Relatórios de progresso avançados",
         "Suporte por email",
@@ -39,7 +49,7 @@ export function SubscriptionModal({ open, onSubscriptionComplete }: Subscription
       priceId: "price_quarterly_4017",
       originalPrice: "R$ 44,70",
       features: [
-        "3 dias grátis para testar",
+        ...(showTrialMessage ? ["3 dias grátis para testar"] : []),
         "Acesso a todos os recursos premium",
         "Relatórios de progresso avançados",
         "Suporte prioritário",
@@ -56,7 +66,7 @@ export function SubscriptionModal({ open, onSubscriptionComplete }: Subscription
       priceId: "price_yearly_12516",
       originalPrice: "R$ 178,80",
       features: [
-        "3 dias grátis para testar",
+        ...(showTrialMessage ? ["3 dias grátis para testar"] : []),
         "Acesso a todos os recursos premium",
         "Relatórios de progresso avançados",
         "Suporte prioritário",
@@ -121,13 +131,25 @@ export function SubscriptionModal({ open, onSubscriptionComplete }: Subscription
           <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
             <Sparkles className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Bem-vindo ao Habitus! 🎉</h2>
+          <h2 className="text-2xl font-bold mb-2">
+            {showTrialMessage ? "Bem-vindo ao Habitus! 🎉" : "Assine o Habitus Premium"}
+          </h2>
           <p className="text-muted-foreground">
-            Escolha seu plano e comece seus <strong>3 dias grátis</strong>
+            {showTrialMessage 
+              ? <>Escolha seu plano e comece seus <strong>3 dias grátis</strong></>
+              : "Escolha seu plano para continuar usando o app"
+            }
           </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Cancele a qualquer momento antes dos 3 dias. Sem compromisso!
-          </p>
+          {showTrialMessage && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Cancele a qualquer momento antes dos 3 dias. Sem compromisso!
+            </p>
+          )}
+          {!showTrialMessage && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Você já utilizou seu período de teste gratuito.
+            </p>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -181,8 +203,10 @@ export function SubscriptionModal({ open, onSubscriptionComplete }: Subscription
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processando...
                   </>
-                ) : (
+                ) : showTrialMessage ? (
                   "Começar meus 3 dias grátis"
+                ) : (
+                  "Assinar agora"
                 )}
               </Button>
             </Card>
@@ -190,8 +214,8 @@ export function SubscriptionModal({ open, onSubscriptionComplete }: Subscription
         </div>
 
         <p className="text-xs text-center text-muted-foreground mt-4">
-          Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade. 
-          O pagamento será cobrado apenas após o período de teste de 3 dias.
+          Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade.
+          {showTrialMessage && " O pagamento será cobrado apenas após o período de teste de 3 dias."}
         </p>
       </DialogContent>
     </Dialog>

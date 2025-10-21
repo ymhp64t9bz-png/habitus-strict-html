@@ -40,26 +40,29 @@ export default function Achievements() {
 
   const enrichedAchievements = achievements.map(achievement => {
     const userAchievement = userAchievements[achievement.id];
+    const progress = userAchievement?.progress || 0;
     return {
       ...achievement,
-      locked: !userAchievement,
-      progress: userAchievement?.progress || 0,
+      locked: !userAchievement || progress < 100,
+      progress,
     };
   });
 
-  const bronzeAchievements = enrichedAchievements.filter((a) => a.level === "bronze");
-  const silverAchievements = enrichedAchievements.filter((a) => a.level === "silver");
-  const goldAchievements = enrichedAchievements.filter((a) => a.level === "gold");
+  // Só mostrar conquistas 100% completas
+  const completedAchievements = enrichedAchievements.filter((a) => !a.locked);
+
+  const bronzeAchievements = completedAchievements.filter((a) => a.level === "bronze");
+  const silverAchievements = completedAchievements.filter((a) => a.level === "silver");
+  const goldAchievements = completedAchievements.filter((a) => a.level === "gold");
 
   const AchievementCard = ({ achievement }: { achievement: typeof achievements[0] }) => (
-    <div className={cn("bg-card rounded-2xl p-4 mb-4 shadow-sm flex gap-4", achievement.locked && "opacity-60")}>
+    <div className="bg-card rounded-2xl p-4 mb-4 shadow-sm flex gap-4">
       <div
         className={cn(
           "w-[50px] h-[50px] rounded-xl flex items-center justify-center text-2xl flex-shrink-0",
           achievement.level === "bronze" && "bg-[#cd7f32]/10 text-[#cd7f32]",
           achievement.level === "silver" && "bg-[#c0c0c0]/10 text-[#c0c0c0]",
-          achievement.level === "gold" && "bg-[#ffd700]/10 text-[#ffd700]",
-          achievement.locked && "bg-muted/10 text-muted"
+          achievement.level === "gold" && "bg-[#ffd700]/10 text-[#ffd700]"
         )}
       >
         {achievement.icon}
@@ -68,14 +71,6 @@ export default function Achievements() {
         <h3 className="font-semibold mb-1">{achievement.name}</h3>
         <p className="text-sm text-muted-foreground mb-2 leading-relaxed">{achievement.description}</p>
         <p className="text-xs text-muted-foreground italic">{achievement.criteria}</p>
-        {!achievement.locked && achievement.progress < 100 && (
-          <div className="w-full h-1 bg-primary/20 rounded-full mt-2 overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full"
-              style={{ width: `${achievement.progress}%` }}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

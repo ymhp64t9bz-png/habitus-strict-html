@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useUser } from "./contexts/UserContext";
+import { SubscriptionGuard } from "./components/subscription/SubscriptionGuard";
 import Splash from "./pages/Splash";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
@@ -64,17 +65,17 @@ const App = () => (
           <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
           <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
           <Route path="/update-password" element={<UpdatePassword />} />
-          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
-          <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
-          <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/edit-habit/:id" element={<ProtectedRoute><EditHabit /></ProtectedRoute>} />
-          <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-          <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><SubscriptionGuard><Home /></SubscriptionGuard></ProtectedRoute>} />
+          <Route path="/progress" element={<ProtectedRoute><SubscriptionGuard><Progress /></SubscriptionGuard></ProtectedRoute>} />
+          <Route path="/community" element={<ProtectedRoute><SubscriptionGuard><Community /></SubscriptionGuard></ProtectedRoute>} />
+          <Route path="/achievements" element={<ProtectedRoute><SubscriptionGuard><Achievements /></SubscriptionGuard></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><SubscriptionGuard><Profile /></SubscriptionGuard></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SubscriptionGuard><Settings /></SubscriptionGuard></ProtectedRoute>} />
+          <Route path="/edit-habit/:id" element={<ProtectedRoute><SubscriptionGuard><EditHabit /></SubscriptionGuard></ProtectedRoute>} />
+          <Route path="/edit-profile" element={<ProtectedRoute><SubscriptionGuard><EditProfile /></SubscriptionGuard></ProtectedRoute>} />
+          <Route path="/challenges" element={<ProtectedRoute><SubscriptionGuard><Challenges /></SubscriptionGuard></ProtectedRoute>} />
           <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-          <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
+          <Route path="/privacy" element={<ProtectedRoute><SubscriptionGuard><Privacy /></SubscriptionGuard></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
