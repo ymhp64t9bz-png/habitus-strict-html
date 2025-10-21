@@ -251,6 +251,25 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
         // Atualizar streak
         await updateStreakOnCompletion(user.user_id);
 
+        // Verificar conquistas após cada hábito completado
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('streak, total_habits_completed')
+          .eq('user_id', user.user_id)
+          .single();
+
+        const { data: allHabits } = await supabase
+          .from('habits')
+          .select('id', { count: 'exact' })
+          .eq('user_id', user.user_id)
+          .eq('is_task', false);
+
+        await checkAndUnlockAchievements(user.user_id, {
+          streak: profile?.streak || 0,
+          totalHabitsCompleted: profile?.total_habits_completed || 0,
+          habitsCount: allHabits?.length || 0,
+        });
+
       } else {
         // Para tasks, funciona como antes (incrementa normalmente)
         const isComplete = value >= item.goal_value;
