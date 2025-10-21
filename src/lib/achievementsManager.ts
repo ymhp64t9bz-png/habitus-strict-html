@@ -74,7 +74,7 @@ export async function checkAndUnlockAchievements(userId: string, data: {
     // Buscar conquistas já desbloqueadas
     const { data: existing, error: fetchError } = await supabase
       .from('user_achievements')
-      .select('achievement_id')
+      .select('*')
       .eq('user_id', userId);
 
     if (fetchError) {
@@ -84,6 +84,22 @@ export async function checkAndUnlockAchievements(userId: string, data: {
 
     const unlockedIds = new Set((existing || []).map(a => a.achievement_id));
     console.log('🔓 Conquistas já desbloqueadas:', Array.from(unlockedIds));
+
+    // Primeiro, remover conquistas que não deveriam estar desbloqueadas
+    for (const userAchievement of (existing || [])) {
+      const achievementCheck = achievementChecks.find(a => a.id === userAchievement.achievement_id);
+      if (achievementCheck) {
+        const shouldBeUnlocked = achievementCheck.check(data);
+        if (!shouldBeUnlocked) {
+          console.log('🗑️ Removendo conquista inválida:', userAchievement.achievement_id);
+          await supabase
+            .from('user_achievements')
+            .delete()
+            .eq('id', userAchievement.id);
+          unlockedIds.delete(userAchievement.achievement_id);
+        }
+      }
+    }
 
     // Verificar cada conquista - só desbloquear quando 100% completa
     for (const achievement of achievementChecks) {
